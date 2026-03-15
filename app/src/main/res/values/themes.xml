@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.ClintBrowser" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/purple_200</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorOnPrimary">@color/dark_purple</item>
+        <item name="colorSecondary">@color/purple_300</item>
+        <item name="colorOnSecondary">@color/dark_purple</item>
+        <item name="colorSurface">@color/toolbar_color</item>
+        <item name="colorOnSurface">@color/on_surface</item>
+        <item name="android:colorBackground">@color/surface_dark</item>
+        <item name="android:windowBackground">@color/surface_dark</item>
+        <item name="colorPrimaryContainer">@color/purple_700</item>
+        <item name="colorOnPrimaryContainer">@color/purple_50</item>
+        <item name="android:statusBarColor">@color/toolbar_color</item>
+        <item name="android:navigationBarColor">@color/toolbar_color</item>
+    </style>
+</resources>

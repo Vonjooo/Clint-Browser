@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Clint</string>
+    <string name="address_bar_hint">Search or enter address</string>
+    <string name="back">Back</string>
+    <string name="forward">Forward</string>
+    <string name="refresh">Refresh</string>
+    <string name="home">Home</string>
+    <string name="menu">Menu</string>
+    <string name="settings">Settings</string>
+    <string name="share_url">Share URL</string>
+    <string name="open_in_browser">Open in external browser</string>
+    <string name="downloading">Downloading&#8230;</string>
+    <string name="download_started">Download started</string>
+    <string name="privacy_settings">Privacy &amp; Security</string>
+    <string name="block_trackers">Block trackers</string>
+    <string name="block_trackers_summary">Block known tracking and analytics domains</string>
+    <string name="javascript_enabled">Enable JavaScript</string>
+    <string name="javascript_enabled_summary">Allow websites to execute JavaScript</string>
+    <string name="block_third_party_cookies">Block third-party cookies</string>
+    <string name="block_third_party_cookies_summary">Prevent cross-site cookie tracking</string>
+    <string name="custom_user_agent">Use generic User-Agent</string>
+    <string name="custom_user_agent_summary">Report as standard Chrome browser to reduce fingerprinting</string>
+</resources>

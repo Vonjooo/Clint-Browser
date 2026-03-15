@@ -1,0 +1,3 @@
+-keep class com.jhaiian.clint.** { *; }
+-keepattributes SourceFile,LineNumberTable
+-keep class android.webkit.** { *; }
