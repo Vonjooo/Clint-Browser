@@ -47,4 +47,25 @@ For better privacy, consider DuckDuckGo or Brave instead.</string>
     <string name="incognito">Incognito</string>
     <string name="no_tabs">No tabs</string>
     <string name="connection_secure">Connection security</string>
+    <string name="about">About</string>
+    <string name="about_summary">Version %1$s</string>
+    <string name="about_acronym">Customizable Layered Internet Navigation Tool</string>
+    <string name="about_section_about">ABOUT</string>
+    <string name="about_section_version">VERSION &amp; DEVICE</string>
+    <string name="about_section_license">LICENSE</string>
+    <string name="about_section_repository">SOURCE CODE</string>
+    <string name="about_section_donate">SUPPORT DEVELOPMENT</string>
+    <string name="about_created_by">Created by</string>
+    <string name="about_description">Clint is a privacy-focused Android browser built on the Android WebView engine. It strips out Google telemetry and tracking, blocks ads and trackers at the network level, and puts control back in your hands.
+
+Clint is completely free and open source software, released under the GNU General Public License v3. You are free to use, study, modify, and distribute it.</string>
+    <string name="about_version_info">Version: %1$s (build %2$d)
+Device architecture: %3$s</string>
+    <string name="about_license_text">Clint is licensed under the GNU General Public License v3.0. This means you are free to view, modify, and redistribute the source code under the same license.</string>
+    <string name="about_license_link_label">View GPL v3.0 license ↗</string>
+    <string name="about_opensource_text">The full source code is publicly available on GitHub. Contributions, bug reports, and feature requests are welcome.</string>
+    <string name="about_github_url">github.com/jhaiian/Clint-Browser ↗</string>
+    <string name="about_donate_text">Clint is built and maintained in free time. If it's useful to you, consider supporting its development.</string>
+    <string name="about_kofi_url">ko-fi.com/jhaiian ↗</string>
+    <string name="about_paypal_email">jhaiianbetter@gmail.com ↗</string>
 </resources>

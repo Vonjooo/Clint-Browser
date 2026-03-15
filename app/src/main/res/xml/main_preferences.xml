@@ -15,4 +15,10 @@
         app:icon="@drawable/ic_search_24"
         app:fragment="com.jhaiian.clint.SearchEngineSettingsFragment" />
 
+    <Preference
+        app:key="pref_about"
+        app:title="@string/about"
+        app:icon="@drawable/ic_info_24"
+        app:fragment="com.jhaiian.clint.AboutFragment" />
+
 </PreferenceScreen>

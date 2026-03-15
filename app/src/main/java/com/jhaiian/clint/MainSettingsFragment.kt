@@ -1,7 +1,6 @@
 package com.jhaiian.clint
 
 import android.os.Bundle
-import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
@@ -15,6 +14,7 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
     override fun onResume() {
         super.onResume()
         updateSearchEngineSummary()
+        updateVersionSummary()
     }
 
     private fun updateSearchEngineSummary() {
@@ -26,5 +26,11 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
             else -> getString(R.string.engine_duckduckgo)
         }
         findPreference<Preference>("pref_search_engine")?.summary = label
+    }
+
+    private fun updateVersionSummary() {
+        val pInfo = requireContext().packageManager.getPackageInfo(requireContext().packageName, 0)
+        findPreference<Preference>("pref_about")?.summary =
+            getString(R.string.about_summary, pInfo.versionName)
     }
 }
