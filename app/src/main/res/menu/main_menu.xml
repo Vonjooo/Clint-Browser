@@ -2,6 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/action_new_tab"
+        android:title="@string/new_tab" />
+
+    <item
+        android:id="@+id/action_new_incognito"
+        android:title="@string/new_incognito_tab" />
+
+    <item
         android:id="@+id/action_share"
         android:title="@string/share_url" />
 

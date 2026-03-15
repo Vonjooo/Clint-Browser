@@ -19,13 +19,15 @@ import android.webkit.WebView
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
 import com.jhaiian.clint.databinding.ActivityMainBinding
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var prefs: SharedPreferences
+    private val tabManager = TabManager()
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,11 +35,10 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        setupWebView()
+        val intentUrl = intent?.data?.toString()
+        openNewTab(isIncognito = false, url = intentUrl ?: getSearchEngineHomeUrl())
         setupAddressBar()
         setupNavigationButtons()
-        val intentUrl = intent?.data?.toString()
-        if (!intentUrl.isNullOrEmpty()) loadUrl(intentUrl) else loadUrl(getSearchEngineHomeUrl())
     }
 
     private fun getSearchEngineHomeUrl(): String {
@@ -58,11 +59,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    private fun setupWebView() {
-        val settings = binding.webView.settings
+    private fun createWebView(isIncognito: Boolean): WebView {
+        val webView = WebView(this)
+        val settings = webView.settings
         settings.javaScriptEnabled = prefs.getBoolean("javascript_enabled", true)
-        settings.domStorageEnabled = true
-        settings.cacheMode = WebSettings.LOAD_DEFAULT
+        settings.domStorageEnabled = !isIncognito
+        settings.cacheMode = if (isIncognito) WebSettings.LOAD_NO_CACHE else WebSettings.LOAD_DEFAULT
         settings.setSupportZoom(true)
         settings.builtInZoomControls = true
         settings.displayZoomControls = false
@@ -73,13 +75,11 @@ class MainActivity : AppCompatActivity() {
         settings.allowContentAccess = false
         settings.safeBrowsingEnabled = false
         settings.userAgentString = buildUserAgent()
-        if (prefs.getBoolean("block_third_party_cookies", true)) {
-            CookieManager.getInstance().setAcceptThirdPartyCookies(binding.webView, false)
+        if (!isIncognito && prefs.getBoolean("block_third_party_cookies", true)) {
+            CookieManager.getInstance().setAcceptThirdPartyCookies(webView, false)
         }
-        binding.webView.webViewClient = ClintWebViewClient(prefs)
-        binding.webView.webChromeClient = ClintWebChromeClient()
-        binding.webView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
-        binding.webView.setDownloadListener { url, userAgent, contentDisposition, mimetype, _ ->
+        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        webView.setDownloadListener { url, userAgent, contentDisposition, mimetype, _ ->
             val request = DownloadManager.Request(Uri.parse(url))
             request.setMimeType(mimetype)
             request.addRequestHeader("User-Agent", userAgent)
@@ -94,6 +94,7 @@ class MainActivity : AppCompatActivity() {
             dm.enqueue(request)
             Toast.makeText(applicationContext, R.string.download_started, Toast.LENGTH_LONG).show()
         }
+        return webView
     }
 
     private fun buildUserAgent(): String {
@@ -102,6 +103,66 @@ class MainActivity : AppCompatActivity() {
         } else {
             WebSettings.getDefaultUserAgent(this)
         }
+    }
+
+    private fun openNewTab(isIncognito: Boolean, url: String = getSearchEngineHomeUrl()) {
+        val webView = createWebView(isIncognito)
+        val tab = BrowserTab(isIncognito = isIncognito, webView = webView)
+        val index = tabManager.add(tab)
+        webView.webViewClient = ClintWebViewClient(prefs) { tabManager.activeTab?.id == tab.id }
+        webView.webChromeClient = ClintWebChromeClient(
+            isActive = { tabManager.activeTab?.id == tab.id },
+            onTitleChanged = { title ->
+                tab.title = title
+                if (tabManager.activeTab?.id == tab.id) updateTabCount()
+            }
+        )
+        tabManager.switchTo(index)
+        attachActiveWebView()
+        loadUrl(url)
+    }
+
+    private fun attachActiveWebView() {
+        val tab = tabManager.activeTab ?: return
+        binding.webContainer.removeAllViews()
+        (tab.webView.parent as? android.view.ViewGroup)?.removeView(tab.webView)
+        binding.webContainer.addView(
+            tab.webView,
+            android.view.ViewGroup.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        )
+        updateIncognitoState(tab.isIncognito)
+        updateTabCount()
+        updateAddressBar(tab.webView.url ?: "")
+        updateNavigationState()
+        if (tab.isIncognito) {
+            CookieManager.getInstance().setAcceptCookie(false)
+        } else {
+            CookieManager.getInstance().setAcceptCookie(true)
+        }
+    }
+
+    private fun updateIncognitoState(isIncognito: Boolean) {
+        binding.incognitoIcon.visibility = if (isIncognito) View.VISIBLE else View.GONE
+        binding.toolbarTop.setBackgroundColor(
+            ContextCompat.getColor(
+                this,
+                if (isIncognito) R.color.incognito_toolbar_color else R.color.toolbar_color
+            )
+        )
+        binding.bottomBar.setBackgroundColor(
+            ContextCompat.getColor(
+                this,
+                if (isIncognito) R.color.incognito_toolbar_color else R.color.toolbar_color
+            )
+        )
+    }
+
+    private fun updateTabCount() {
+        val count = tabManager.count
+        binding.btnTabCount.text = if (count > 99) ":D" else count.toString()
     }
 
     private fun setupAddressBar() {
@@ -113,31 +174,36 @@ class MainActivity : AppCompatActivity() {
             } else false
         }
         binding.addressBar.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) updateAddressBar(binding.webView.url ?: "")
+            if (!hasFocus) updateAddressBar(tabManager.activeTab?.webView?.url ?: "")
         }
     }
 
     private fun setupNavigationButtons() {
         binding.btnBack.setOnClickListener {
-            if (binding.webView.canGoBack()) binding.webView.goBack()
+            tabManager.activeTab?.webView?.let { if (it.canGoBack()) it.goBack() }
         }
         binding.btnForward.setOnClickListener {
-            if (binding.webView.canGoForward()) binding.webView.goForward()
+            tabManager.activeTab?.webView?.let { if (it.canGoForward()) it.goForward() }
         }
         binding.btnRefresh.setOnClickListener {
-            if (binding.progressBar.visibility == View.VISIBLE) {
-                binding.webView.stopLoading()
-                onPageFinished(binding.webView.url ?: "")
-            } else {
-                binding.webView.reload()
+            tabManager.activeTab?.webView?.let { wv ->
+                if (binding.progressBar.visibility == View.VISIBLE) {
+                    wv.stopLoading()
+                    onPageFinished(wv.url ?: "")
+                } else {
+                    wv.reload()
+                }
             }
         }
         binding.btnHome.setOnClickListener { loadUrl(getSearchEngineHomeUrl()) }
+        binding.btnTabCount.setOnClickListener { showTabSwitcher() }
         binding.btnMenu.setOnClickListener { view ->
             val popup = PopupMenu(this, view)
             popup.menuInflater.inflate(R.menu.main_menu, popup.menu)
             popup.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
+                    R.id.action_new_tab -> { openNewTab(false); true }
+                    R.id.action_new_incognito -> { openNewTab(true); true }
                     R.id.action_settings -> {
                         startActivity(Intent(this, SettingsActivity::class.java))
                         true
@@ -145,14 +211,14 @@ class MainActivity : AppCompatActivity() {
                     R.id.action_share -> {
                         val i = Intent(Intent.ACTION_SEND).apply {
                             type = "text/plain"
-                            putExtra(Intent.EXTRA_TEXT, binding.webView.url)
+                            putExtra(Intent.EXTRA_TEXT, tabManager.activeTab?.webView?.url)
                         }
                         startActivity(Intent.createChooser(i, getString(R.string.share_url)))
                         true
                     }
                     R.id.action_open_external -> {
                         runCatching {
-                            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(binding.webView.url)))
+                            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(tabManager.activeTab?.webView?.url)))
                         }
                         true
                     }
@@ -163,8 +229,42 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun showTabSwitcher() {
+        val sheet = TabSwitcherSheet()
+        sheet.tabs = tabManager.previews().toMutableList()
+        sheet.activeIndex = tabManager.activeIndex
+        sheet.listener = this
+        sheet.show(supportFragmentManager, "tab_switcher")
+    }
+
+    override fun onTabSelected(index: Int) {
+        tabManager.switchTo(index)
+        attachActiveWebView()
+    }
+
+    override fun onTabClosed(index: Int) {
+        val wasActive = index == tabManager.activeIndex
+        tabManager.closeTab(index)
+        if (tabManager.count == 0) {
+            openNewTab(false)
+        } else if (wasActive) {
+            attachActiveWebView()
+        } else {
+            updateTabCount()
+        }
+    }
+
+    override fun onNewTab() {
+        openNewTab(false)
+    }
+
+    override fun onNewIncognitoTab() {
+        openNewTab(true)
+    }
+
     fun loadUrl(input: String) {
-        binding.webView.loadUrl(formatUrl(input))
+        tabManager.activeTab?.webView?.loadUrl(formatUrl(input))
+        tabManager.activeTab?.url = formatUrl(input)
         hideKeyboard()
     }
 
@@ -187,9 +287,12 @@ class MainActivity : AppCompatActivity() {
         val display = url.removePrefix("https://").removePrefix("http://")
         if (!binding.addressBar.isFocused) binding.addressBar.setText(display)
         binding.lockIcon.setImageResource(
-            if (url.startsWith("https://")) R.drawable.ic_lock_24
-            else R.drawable.ic_lock_open_24
+            if (url.startsWith("https://")) R.drawable.ic_lock_24 else R.drawable.ic_lock_open_24
         )
+    }
+
+    fun onTabUrlUpdated(webView: WebView, url: String) {
+        tabManager.tabs.find { it.webView === webView }?.url = url
     }
 
     fun onPageStarted(url: String) {
@@ -211,8 +314,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateNavigationState() {
-        binding.btnBack.alpha = if (binding.webView.canGoBack()) 1.0f else 0.38f
-        binding.btnForward.alpha = if (binding.webView.canGoForward()) 1.0f else 0.38f
+        val wv = tabManager.activeTab?.webView
+        binding.btnBack.alpha = if (wv?.canGoBack() == true) 1.0f else 0.38f
+        binding.btnForward.alpha = if (wv?.canGoForward() == true) 1.0f else 0.38f
     }
 
     private fun hideKeyboard() {
@@ -222,15 +326,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK && binding.webView.canGoBack()) {
-            binding.webView.goBack()
-            return true
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            val wv = tabManager.activeTab?.webView
+            if (wv?.canGoBack() == true) {
+                wv.goBack()
+                return true
+            }
         }
         return super.onKeyDown(keyCode, event)
     }
 
     override fun onDestroy() {
-        binding.webView.destroy()
+        tabManager.destroyAll()
         super.onDestroy()
     }
 }
