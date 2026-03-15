@@ -6,34 +6,15 @@ APP_HOME="`( cd "$APP_HOME" && pwd )`"
 
 MAX_FD="maximum"
 
-warn() {
-    echo "$*"
-}
+warn() { echo "$*"; }
+die() { echo; echo "$*"; echo; exit 1; }
 
-die() {
-    echo
-    echo "$*"
-    echo
-    exit 1
-}
-
-cygwin=false
-msys=false
-darwin=false
-nonstop=false
+cygwin=false; msys=false; darwin=false; nonstop=false
 case "`uname`" in
-  CYGWIN* )
-    cygwin=true
-    ;;
-  Darwin* )
-    darwin=true
-    ;;
-  MINGW* )
-    msys=true
-    ;;
-  NONSTOP* )
-    nonstop=true
-    ;;
+  CYGWIN* ) cygwin=true ;;
+  Darwin* ) darwin=true ;;
+  MINGW*  ) msys=true ;;
+  NONSTOP*) nonstop=true ;;
 esac
 
 CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
@@ -52,16 +33,9 @@ else
     which java > /dev/null 2>&1 || die "ERROR: JAVA_HOME is not set and 'java' was not found in PATH."
 fi
 
-if [ "$cygwin" = "true" -o "$msys" = "true" ] ; then
+if [ "$cygwin" = "true" ] || [ "$msys" = "true" ] ; then
     APP_HOME=`cygpath --path --mixed "$APP_HOME"`
     CLASSPATH=`cygpath --path --mixed "$CLASSPATH"`
 fi
 
-DEFAULT_JVM_OPTS='"-Xmx64m" "-Xms64m"'
-
-set -- \
-  -classpath "$CLASSPATH" \
-  org.gradle.wrapper.GradleWrapperMain \
-  "$@"
-
-exec "$JAVACMD" $DEFAULT_JVM_OPTS "$@"
+exec "$JAVACMD" -Xmx64m -Xms64m -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"
