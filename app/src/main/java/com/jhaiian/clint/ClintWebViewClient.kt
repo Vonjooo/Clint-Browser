@@ -135,7 +135,7 @@ class ClintWebViewClient(
 
             val contentType = response.header("Content-Type") ?: "application/octet-stream"
             val mimeType = contentType.split(";")[0].trim().ifEmpty { "application/octet-stream" }
-            val charset = Regex("[Cc]harset=([\w-]+)")
+            val charset = Regex("[Cc]harset=([\\w-]+)")
                 .find(contentType)?.groupValues?.get(1) ?: "UTF-8"
 
             val responseHeaders = mutableMapOf<String, String>()
