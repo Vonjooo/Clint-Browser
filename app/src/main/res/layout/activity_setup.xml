@@ -29,8 +29,7 @@
                     android:layout_width="96dp"
                     android:layout_height="96dp"
                     android:layout_marginTop="32dp"
-                    android:src="@drawable/ic_launcher_foreground"
-                    android:background="@drawable/ic_launcher_background"
+                    android:src="@mipmap/ic_launcher"
                     android:padding="12dp"
                     android:contentDescription="@string/app_name" />
 

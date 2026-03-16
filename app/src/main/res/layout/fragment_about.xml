@@ -23,8 +23,7 @@
             <ImageView
                 android:layout_width="56dp"
                 android:layout_height="56dp"
-                android:src="@drawable/ic_launcher_foreground"
-                android:background="@drawable/ic_launcher_background"
+                android:src="@mipmap/ic_launcher"
                 android:padding="6dp"
                 android:contentDescription="@string/app_name" />
 
