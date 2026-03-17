@@ -21,10 +21,9 @@
             android:paddingBottom="20dp">
 
             <ImageView
-                android:layout_width="56dp"
-                android:layout_height="56dp"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
                 android:src="@drawable/ic_clint_logo"
-                android:padding="6dp"
                 android:contentDescription="@string/app_name" />
 
             <LinearLayout
