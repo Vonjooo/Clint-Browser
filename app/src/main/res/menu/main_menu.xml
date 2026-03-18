@@ -14,10 +14,6 @@
         android:title="@string/share_url" />
 
     <item
-        android:id="@+id/action_open_external"
-        android:title="@string/open_in_browser" />
-
-    <item
         android:id="@+id/action_desktop_mode"
         android:title="@string/desktop_mode"
         android:checkable="true" />

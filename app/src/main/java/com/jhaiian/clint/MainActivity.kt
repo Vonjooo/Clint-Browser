@@ -8,7 +8,9 @@ import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.view.Gravity
 import android.view.KeyEvent
+import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
@@ -16,7 +18,8 @@ import android.webkit.CookieManager
 import android.webkit.URLUtil
 import android.webkit.WebSettings
 import android.webkit.WebView
-import android.widget.PopupMenu
+import android.widget.ImageView
+import android.widget.PopupWindow
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -364,33 +367,54 @@ class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
         }
         binding.btnHome.setOnClickListener { loadUrl(getSearchEngineHomeUrl()) }
         binding.btnTabCount.setOnClickListener { showTabSwitcher() }
-        binding.btnMenu.setOnClickListener { view ->
-            val popup = PopupMenu(this, view)
-            popup.menuInflater.inflate(R.menu.main_menu, popup.menu)
-            popup.menu.findItem(R.id.action_desktop_mode)?.isChecked = isDesktopMode
-            popup.setOnMenuItemClickListener { item ->
-                when (item.itemId) {
-                    R.id.action_new_tab -> { openNewTab(false); true }
-                    R.id.action_new_incognito -> { openNewTab(true); true }
-                    R.id.action_desktop_mode -> {
-                        isDesktopMode = !isDesktopMode
-                        val activeWebView = tabManager.activeTab?.webView
-                        activeWebView?.settings?.userAgentString = buildUserAgent()
-                        activeWebView?.settings?.useWideViewPort = isDesktopMode
-                        activeWebView?.settings?.loadWithOverviewMode = isDesktopMode
-                        activeWebView?.reload()
-                        true
-                    }
-                    R.id.action_settings -> { startActivity(Intent(this, SettingsActivity::class.java)); true }
-                    R.id.action_share -> {
-                        val i = Intent(Intent.ACTION_SEND).apply { type = "text/plain"; putExtra(Intent.EXTRA_TEXT, tabManager.activeTab?.webView?.url) }
-                        startActivity(Intent.createChooser(i, getString(R.string.share_url))); true
-                    }
-                    R.id.action_open_external -> { runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(tabManager.activeTab?.webView?.url))) }; true }
-                    else -> false
-                }
+        binding.btnMenu.setOnClickListener { anchor ->
+            val popupView = LayoutInflater.from(this).inflate(R.layout.popup_menu, null)
+            val popup = PopupWindow(
+                popupView,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+                true
+            )
+            popup.elevation = 12f
+            popup.isOutsideTouchable = true
+
+            val desktopCheck = popupView.findViewById<ImageView>(R.id.desktop_mode_check)
+            desktopCheck.alpha = if (isDesktopMode) 1f else 0f
+
+            popupView.findViewById<View>(R.id.menu_new_tab).setOnClickListener {
+                popup.dismiss(); openNewTab(false)
             }
-            popup.show()
+            popupView.findViewById<View>(R.id.menu_incognito).setOnClickListener {
+                popup.dismiss(); openNewTab(true)
+            }
+            popupView.findViewById<View>(R.id.menu_share).setOnClickListener {
+                popup.dismiss()
+                val i = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, tabManager.activeTab?.webView?.url)
+                }
+                startActivity(Intent.createChooser(i, getString(R.string.share_url)))
+            }
+            popupView.findViewById<View>(R.id.menu_desktop_mode).setOnClickListener {
+                isDesktopMode = !isDesktopMode
+                desktopCheck.alpha = if (isDesktopMode) 1f else 0f
+                val activeWebView = tabManager.activeTab?.webView
+                activeWebView?.settings?.userAgentString = buildUserAgent()
+                activeWebView?.settings?.useWideViewPort = isDesktopMode
+                activeWebView?.settings?.loadWithOverviewMode = isDesktopMode
+                activeWebView?.reload()
+                popup.dismiss()
+            }
+            popupView.findViewById<View>(R.id.menu_settings).setOnClickListener {
+                popup.dismiss(); startActivity(Intent(this, SettingsActivity::class.java))
+            }
+
+            popupView.measure(
+                android.view.View.MeasureSpec.makeMeasureSpec(0, android.view.View.MeasureSpec.UNSPECIFIED),
+                android.view.View.MeasureSpec.makeMeasureSpec(0, android.view.View.MeasureSpec.UNSPECIFIED)
+            )
+            val popupWidth = popupView.measuredWidth
+            popup.showAsDropDown(anchor, -popupWidth + anchor.width, 0, Gravity.TOP or Gravity.END)
         }
     }
 
