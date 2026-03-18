@@ -65,7 +65,7 @@ class DownloadsActivity : AppCompatActivity() {
         val list = synchronized(ClintDownloadManager.downloads) {
             ClintDownloadManager.downloads.toList()
         }
-        adapter.submitList(list)
+        adapter.setItems(list)
         emptyView.isVisible = list.isEmpty()
         recycler.isVisible = list.isNotEmpty()
     }

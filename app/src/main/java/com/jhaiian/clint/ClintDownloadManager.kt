@@ -125,7 +125,7 @@ object ClintDownloadManager {
                         if (read == -1) break
                         output.write(buffer, 0, read)
                         item.bytesDownloaded += read
-                        if (item.bytesDownloaded - lastNotifyBytes > 65536) {
+                        if (item.bytesDownloaded - lastNotifyBytes > 8192) {
                             lastNotifyBytes = item.bytesDownloaded
                             showProgressNotification(context, item)
                             onDownloadsChanged?.invoke()

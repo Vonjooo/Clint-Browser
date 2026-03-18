@@ -7,14 +7,26 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.view.isVisible
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 
 class DownloadsAdapter(
     private val onCancel: (Int) -> Unit,
     private val onOpen: (ClintDownloadManager.DownloadItem) -> Unit
-) : ListAdapter<ClintDownloadManager.DownloadItem, DownloadsAdapter.ViewHolder>(DIFF) {
+) : RecyclerView.Adapter<DownloadsAdapter.ViewHolder>() {
+
+    private val items = mutableListOf<ClintDownloadManager.DownloadItem>()
+
+    fun setItems(newItems: List<ClintDownloadManager.DownloadItem>) {
+        val oldSize = items.size
+        val newSize = newItems.size
+        items.clear()
+        items.addAll(newItems)
+        if (oldSize == newSize) {
+            notifyItemRangeChanged(0, newSize)
+        } else {
+            notifyDataSetChanged()
+        }
+    }
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val filename: TextView = view.findViewById(R.id.download_filename)
@@ -29,8 +41,10 @@ class DownloadsAdapter(
         return ViewHolder(view)
     }
 
+    override fun getItemCount() = items.size
+
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = getItem(position)
+        val item = items[position]
         holder.filename.text = item.filename
 
         when (item.status) {
@@ -70,13 +84,5 @@ class DownloadsAdapter(
         bytes >= 1_048_576 -> "%.1f MB".format(bytes / 1_048_576.0)
         bytes >= 1024 -> "%.0f KB".format(bytes / 1024.0)
         else -> "$bytes B"
-    }
-
-    companion object {
-        private val DIFF = object : DiffUtil.ItemCallback<ClintDownloadManager.DownloadItem>() {
-            override fun areItemsTheSame(a: ClintDownloadManager.DownloadItem, b: ClintDownloadManager.DownloadItem) = a.id == b.id
-            override fun areContentsTheSame(a: ClintDownloadManager.DownloadItem, b: ClintDownloadManager.DownloadItem) =
-                a.status == b.status && a.bytesDownloaded == b.bytesDownloaded
-        }
     }
 }
