@@ -17,27 +17,15 @@ class DownloadsAdapter(
     private val items = mutableListOf<ClintDownloadManager.DownloadItem>()
 
     fun setItems(newItems: List<ClintDownloadManager.DownloadItem>) {
-        if (items.size != newItems.size) {
+        if (items.size != newItems.size || items.zip(newItems).any { (a, b) -> a.id != b.id }) {
             items.clear()
             items.addAll(newItems)
             notifyDataSetChanged()
             return
         }
         newItems.forEachIndexed { i, newItem ->
-            val old = items[i]
-            if (old.id != newItem.id) {
-                items.clear()
-                items.addAll(newItems)
-                notifyDataSetChanged()
-                return
-            }
-            if (old.bytesDownloaded != newItem.bytesDownloaded ||
-                old.totalBytes != newItem.totalBytes ||
-                old.status != newItem.status
-            ) {
-                items[i] = newItem
-                notifyItemChanged(i, PAYLOAD_PROGRESS)
-            }
+            items[i] = newItem
+            notifyItemChanged(i, PAYLOAD_PROGRESS)
         }
     }
 

@@ -63,7 +63,7 @@ class DownloadsActivity : AppCompatActivity() {
 
     private fun refresh() {
         val list = synchronized(ClintDownloadManager.downloads) {
-            ClintDownloadManager.downloads.toList()
+            ClintDownloadManager.downloads.map { it.copy() }
         }
         adapter.setItems(list)
         emptyView.isVisible = list.isEmpty()
