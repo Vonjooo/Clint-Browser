@@ -47,21 +47,10 @@ jobs:
 
       - name: Restore signing keystore
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" \
-            | base64 --decode > app/release_keystore.jks
+          printf '%s' "${{ secrets.BASE_64_SIGNING_KEY }}" | tr -d '\n' | base64 -d > app/release_keystore.jks
 
-      - name: Write signing config to local.properties
-        env:
-          STORE_PASSWORD: ${{ secrets.KEYSTORE_STORE_PASSWORD }}
-          KEY_ALIAS:      ${{ secrets.KEYSTORE_KEY_ALIAS }}
-          KEY_PASSWORD:   ${{ secrets.KEYSTORE_KEY_PASSWORD }}
-        run: |
-          cat >> local.properties <<EOF
-          signingConfig.storeFile=app/release_keystore.jks
-          signingConfig.storePassword=${STORE_PASSWORD}
-          signingConfig.keyAlias=${KEY_ALIAS}
-          signingConfig.keyPassword=${KEY_PASSWORD}
-          EOF
+      - name: Create local.properties
+        run: printf '%s\n' "${{ secrets.LOCAL_PROPERTIES }}" > local.properties
 
       - name: Grant Gradle wrapper execute permission
         run: chmod +x gradlew
