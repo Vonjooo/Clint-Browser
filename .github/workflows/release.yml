@@ -1,0 +1,159 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Build and Publish APKs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect version and release type
+        id: info
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          if [[ "$TAG" == *"-beta"* ]]; then
+            IS_PRERELEASE="true"
+            MANIFEST="Update/Beta.json"
+            RELEASE_LABEL="Beta"
+          else
+            IS_PRERELEASE="false"
+            MANIFEST="Update/Stable.json"
+            RELEASE_LABEL="Stable"
+          fi
+          echo "tag=$TAG"                     >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION"             >> "$GITHUB_OUTPUT"
+          echo "is_prerelease=$IS_PRERELEASE" >> "$GITHUB_OUTPUT"
+          echo "manifest=$MANIFEST"           >> "$GITHUB_OUTPUT"
+          echo "release_label=$RELEASE_LABEL" >> "$GITHUB_OUTPUT"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Restore signing keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" \
+            | base64 --decode > app/release_keystore.jks
+
+      - name: Write signing config to local.properties
+        env:
+          STORE_PASSWORD: ${{ secrets.KEYSTORE_STORE_PASSWORD }}
+          KEY_ALIAS:      ${{ secrets.KEYSTORE_KEY_ALIAS }}
+          KEY_PASSWORD:   ${{ secrets.KEYSTORE_KEY_PASSWORD }}
+        run: |
+          cat >> local.properties <<EOF
+          signingConfig.storeFile=app/release_keystore.jks
+          signingConfig.storePassword=${STORE_PASSWORD}
+          signingConfig.keyAlias=${KEY_ALIAS}
+          signingConfig.keyPassword=${KEY_PASSWORD}
+          EOF
+
+      - name: Grant Gradle wrapper execute permission
+        run: chmod +x gradlew
+
+      - name: Build all release APKs
+        run: ./gradlew assembleRelease
+
+      - name: Rename APKs to ClintBrowser-VERSION-ARCH format
+        id: apks
+        run: |
+          VERSION="${{ steps.info.outputs.version }}"
+          SRC_DIR="app/build/outputs/apk/release"
+          OUT_DIR="app/build/outputs/apk/renamed"
+          mkdir -p "$OUT_DIR"
+          for apk in "$SRC_DIR"/*.apk; do
+            fname=$(basename "$apk")
+            if   [[ "$fname" == *"arm64-v8a"*  ]]; then ARCH="arm64-v8a"
+            elif [[ "$fname" == *"armeabi-v7a"* ]]; then ARCH="armeabi-v7a"
+            elif [[ "$fname" == *"x86_64"*     ]]; then ARCH="x86_64"
+            elif [[ "$fname" == *"x86"*        ]]; then ARCH="x86"
+            elif [[ "$fname" == *"universal"*  ]]; then ARCH="universal"
+            else                                         ARCH="unknown"
+            fi
+            NEW_NAME="ClintBrowser-${VERSION}-${ARCH}.apk"
+            cp "$apk" "$OUT_DIR/$NEW_NAME"
+          done
+          echo "apk_dir=$OUT_DIR" >> "$GITHUB_OUTPUT"
+
+      - name: Update manifest with version, changelog, and download URLs
+        env:
+          CB_VERSION:  ${{ steps.info.outputs.version }}
+          CB_TAG:      ${{ steps.info.outputs.tag }}
+          CB_MANIFEST: ${{ steps.info.outputs.manifest }}
+          CB_BASE_URL: "https://github.com/${{ github.repository }}/releases/download/${{ steps.info.outputs.tag }}"
+        run: |
+          python3 - <<'PYEOF'
+          import json, os, re
+
+          version  = os.environ["CB_VERSION"]
+          tag      = os.environ["CB_TAG"]
+          manifest = os.environ["CB_MANIFEST"]
+          base_url = os.environ["CB_BASE_URL"]
+
+          with open("CHANGELOG.md", "r", encoding="utf-8") as fh:
+              changelog_raw = fh.read()
+
+          pattern = r"(## " + re.escape(tag) + r"[^\n]*\n)(.*?)(?=\n## |\Z)"
+          match = re.search(pattern, changelog_raw, re.DOTALL)
+
+          if match:
+              heading = match.group(1).rstrip("\n")
+              body    = match.group(2).strip()
+              changelog_text = heading + "\n\n" + body if body else heading
+          else:
+              changelog_text = f"## {tag}"
+
+          with open(manifest, "r", encoding="utf-8") as fh:
+              data = json.load(fh)
+
+          data["version"]   = version
+          data["changelog"] = changelog_text
+
+          archs = ["arm64-v8a", "armeabi-v7a", "x86", "x86_64", "universal"]
+          for arch in archs:
+              apk_name = f"ClintBrowser-{version}-{arch}.apk"
+              data["downloads"][arch] = f"{base_url}/{apk_name}"
+
+          with open(manifest, "w", encoding="utf-8") as fh:
+              json.dump(data, fh, indent=2, ensure_ascii=False)
+              fh.write("\n")
+          PYEOF
+
+      - name: Create GitHub Release and upload APKs
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name:   ${{ steps.info.outputs.tag }}
+          name:       "ClintBrowser ${{ steps.info.outputs.version }} (${{ steps.info.outputs.release_label }})"
+          prerelease: ${{ steps.info.outputs.is_prerelease }}
+          files:      ${{ steps.apks.outputs.apk_dir }}/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit and push updated manifest
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          MANIFEST="${{ steps.info.outputs.manifest }}"
+          VERSION="${{ steps.info.outputs.version }}"
+          git add "$MANIFEST"
+          if git diff --cached --quiet; then
+            echo "No changes in $MANIFEST — skipping commit."
+          else
+            git commit -m "chore: update ${MANIFEST} to v${VERSION} [skip ci]"
+            git push origin HEAD:main
+          fi
