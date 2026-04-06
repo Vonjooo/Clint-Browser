@@ -1,25 +1,25 @@
 package com.jhaiian.clint.update
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Build
-import android.text.SpannableStringBuilder
-import android.text.Spanned
-import android.text.method.LinkMovementMethod
-import android.text.style.BulletSpan
-import android.text.style.RelativeSizeSpan
-import android.text.style.StyleSpan
-import android.graphics.Typeface
-import android.widget.TextView
-import android.widget.ScrollView
+import android.view.Gravity
 import android.widget.LinearLayout
-import androidx.appcompat.app.AlertDialog
+import android.widget.ProgressBar
+import android.widget.ScrollView
+import android.widget.TextView
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.jhaiian.clint.R
+import io.noties.markwon.Markwon
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
+import java.io.File
 import java.util.concurrent.Executors
 
 object UpdateChecker {
@@ -28,6 +28,10 @@ object UpdateChecker {
         "https://raw.githubusercontent.com/jhaiian/Clint-Browser/main/Update/Stable.json"
     private const val BETA_URL =
         "https://raw.githubusercontent.com/jhaiian/Clint-Browser/main/Update/Beta.json"
+
+    private const val PREFS_NAME = "update_prefs"
+    private const val KEY_SKIPPED_VERSION_CODE = "skipped_version_code"
+    private const val KEY_CACHED_APK_VERSION_CODE = "cached_apk_version_code"
 
     private val executor = Executors.newSingleThreadExecutor()
     private val client = OkHttpClient()
@@ -52,11 +56,17 @@ object UpdateChecker {
                 val currentVersionCode = activity.packageManager
                     .getPackageInfo(activity.packageName, 0).longVersionCode
 
+                val prefs = activity.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                val skippedVersionCode = prefs.getLong(KEY_SKIPPED_VERSION_CODE, -1L)
+
+                cleanStaleApk(activity, currentVersionCode)
+
                 val hasUpdate = remoteVersionCode > currentVersionCode
+                val isSkipped = silent && remoteVersionCode == skippedVersionCode
 
                 activity.runOnUiThread {
-                    if (hasUpdate) {
-                        showUpdateDialog(activity, remoteVersion, changelog, downloadUrl, isBeta)
+                    if (hasUpdate && !isSkipped) {
+                        showUpdateDialog(activity, remoteVersion, remoteVersionCode, changelog, downloadUrl, isBeta)
                     } else if (!silent) {
                         showNoUpdateDialog(activity)
                     }
@@ -69,63 +79,241 @@ object UpdateChecker {
         }
     }
 
+    private fun cleanStaleApk(activity: Activity, currentVersionCode: Long) {
+        val prefs = activity.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val cachedVersionCode = prefs.getLong(KEY_CACHED_APK_VERSION_CODE, -1L)
+        if (cachedVersionCode <= currentVersionCode) {
+            val apkFile = File(activity.cacheDir, "updates/update.apk")
+            if (apkFile.exists()) apkFile.delete()
+            prefs.edit().remove(KEY_CACHED_APK_VERSION_CODE).apply()
+        }
+    }
+
     private fun showUpdateDialog(
         activity: Activity,
         version: String,
+        versionCode: Long,
         rawChangelog: String,
         downloadUrl: String?,
         isBeta: Boolean
     ) {
         val channelLabel = if (isBeta) " (Beta)" else ""
         val changelog = extractLatestChangelog(rawChangelog)
+        val markwon = Markwon.create(activity)
 
-        val scrollView = ScrollView(activity).apply {
-            val tv = TextView(activity).apply {
-                text = buildChangelogSpannable(changelog)
-                setPadding(64, 24, 64, 24)
-                setTextColor(0xCCFFFFFF.toInt())
-                textSize = 13f
-                movementMethod = LinkMovementMethod.getInstance()
-            }
-            addView(tv)
+        val dp = activity.resources.displayMetrics.density
+
+        val changelogTv = TextView(activity).apply {
+            setPadding(64, 24, 64, 8)
+            setTextColor(0xCCFFFFFF.toInt())
+            textSize = 13f
+        }
+        markwon.setMarkdown(changelogTv, changelog)
+
+        val divider = android.view.View(activity).apply {
+            setBackgroundColor(0x1FFFFFFF)
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 1
+            ).also { it.topMargin = (8 * dp).toInt() }
         }
 
-        MaterialAlertDialogBuilder(activity, R.style.ThemeOverlay_ClintBrowser_Dialog)
-            .setTitle("v$version$channelLabel available")
-            .setView(scrollView)
-            .setNegativeButton("Later", null)
-            .apply {
-                if (!downloadUrl.isNullOrEmpty()) {
-                    setPositiveButton("Download") { _, _ ->
-                        activity.startActivity(
-                            Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl))
-                        )
-                    }
-                } else {
-                    setPositiveButton("View on GitHub") { _, _ ->
-                        activity.startActivity(
-                            Intent(Intent.ACTION_VIEW,
-                                Uri.parse("https://github.com/jhaiian/Clint-Browser/releases"))
-                        )
+        fun makeBtn(label: String, color: Int) = TextView(activity).apply {
+            text = label
+            setTextColor(color)
+            textSize = 14f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
+            val pad = (12 * dp).toInt()
+            setPadding(pad, pad, pad, pad)
+            background = android.util.TypedValue().let { tv2 ->
+                activity.theme.resolveAttribute(android.R.attr.selectableItemBackground, tv2, true)
+                androidx.core.content.ContextCompat.getDrawable(activity, tv2.resourceId)
+            }
+        }
+
+        val btnSkip = makeBtn(activity.getString(R.string.update_dialog_skip), 0x99FFFFFF.toInt())
+        val btnLater = makeBtn(activity.getString(R.string.action_later), 0xFFBA68C8.toInt())
+        val primaryColor = 0xFFBA68C8.toInt()
+
+        val buttonRow = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.END or Gravity.CENTER_VERTICAL
+            val hPad = (8 * dp).toInt()
+            val vPad = (4 * dp).toInt()
+            setPadding(hPad, vPad, hPad, vPad)
+            addView(btnSkip, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+            addView(btnLater)
+        }
+
+        val container = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            val scrollView = ScrollView(activity).apply {
+                addView(changelogTv)
+            }
+            addView(scrollView, LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f
+            ))
+            addView(divider)
+            addView(buttonRow)
+        }
+
+        val dialog = MaterialAlertDialogBuilder(activity, R.style.ThemeOverlay_ClintBrowser_Dialog)
+            .setTitle(activity.getString(R.string.update_dialog_title, version, channelLabel))
+            .setView(container)
+            .setCancelable(false)
+            .create()
+
+        btnSkip.setOnClickListener {
+            activity.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .edit().putLong(KEY_SKIPPED_VERSION_CODE, versionCode).apply()
+            dialog.dismiss()
+        }
+        btnLater.setOnClickListener { dialog.dismiss() }
+
+        val btnAction = makeBtn(
+            if (!downloadUrl.isNullOrEmpty()) activity.getString(R.string.update_dialog_download)
+            else activity.getString(R.string.update_dialog_view_github),
+            primaryColor
+        )
+        buttonRow.addView(btnAction)
+        btnAction.setOnClickListener {
+            dialog.dismiss()
+            if (!downloadUrl.isNullOrEmpty()) {
+                startDownload(activity, downloadUrl, versionCode)
+            } else {
+                activity.startActivity(
+                    Intent(Intent.ACTION_VIEW,
+                        Uri.parse("https://github.com/jhaiian/Clint-Browser/releases"))
+                )
+            }
+        }
+
+        dialog.show()
+    }
+
+    private fun startDownload(activity: Activity, downloadUrl: String, remoteVersionCode: Long) {
+        val apkFile = File(activity.cacheDir, "updates/update.apk").also {
+            it.parentFile?.mkdirs()
+        }
+
+        val prefs = activity.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val cachedVersionCode = prefs.getLong(KEY_CACHED_APK_VERSION_CODE, -1L)
+
+        if (apkFile.exists() && apkFile.length() > 0 && cachedVersionCode == remoteVersionCode) {
+            installApk(activity, apkFile)
+            return
+        }
+
+        apkFile.delete()
+
+        val statusText = TextView(activity).apply {
+            text = activity.getString(R.string.update_download_preparing)
+            setTextColor(0xFFFFFFFF.toInt())
+            textSize = 14f
+        }
+
+        val progressBar = ProgressBar(activity, null, android.R.attr.progressBarStyleHorizontal).apply {
+            max = 100
+            progress = 0
+            isIndeterminate = false
+            progressTintList = ColorStateList.valueOf(0xFFBA68C8.toInt())
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).also { lp -> lp.topMargin = 32; lp.bottomMargin = 8 }
+        }
+
+        val percentText = TextView(activity).apply {
+            text = "0%"
+            setTextColor(0x99FFFFFF.toInt())
+            textSize = 12f
+            gravity = Gravity.END
+        }
+
+        val layout = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(72, 48, 72, 24)
+            addView(statusText)
+            addView(progressBar)
+            addView(percentText)
+        }
+
+        val request = Request.Builder().url(downloadUrl).build()
+        val call = client.newCall(request)
+
+        val dialog = MaterialAlertDialogBuilder(activity, R.style.ThemeOverlay_ClintBrowser_Dialog)
+            .setTitle(activity.getString(R.string.update_download_dialog_title))
+            .setView(layout)
+            .setCancelable(false)
+            .setNegativeButton(activity.getString(R.string.action_cancel)) { _, _ -> call.cancel() }
+            .show()
+
+        executor.submit {
+            try {
+                val response = call.execute()
+                val body = response.body ?: throw Exception("Empty response")
+                val contentLength = body.contentLength()
+
+                activity.runOnUiThread { statusText.text = activity.getString(R.string.update_download_in_progress) }
+
+                var downloaded = 0L
+                body.byteStream().use { input ->
+                    apkFile.outputStream().use { output ->
+                        val buffer = ByteArray(8192)
+                        var bytes: Int
+                        while (input.read(buffer).also { bytes = it } != -1) {
+                            output.write(buffer, 0, bytes)
+                            downloaded += bytes
+                            if (contentLength > 0) {
+                                val pct = (downloaded * 100 / contentLength).toInt()
+                                activity.runOnUiThread {
+                                    progressBar.progress = pct
+                                    percentText.text = "$pct%"
+                                }
+                            }
+                        }
                     }
                 }
+
+                prefs.edit().putLong(KEY_CACHED_APK_VERSION_CODE, remoteVersionCode).apply()
+
+                activity.runOnUiThread {
+                    if (dialog.isShowing) dialog.dismiss()
+                    installApk(activity, apkFile)
+                }
+            } catch (_: Exception) {
+                apkFile.delete()
+                activity.runOnUiThread {
+                    if (dialog.isShowing) dialog.dismiss()
+                }
             }
-            .show()
+        }
+    }
+
+    private fun installApk(activity: Activity, apkFile: File) {
+        val uri = FileProvider.getUriForFile(
+            activity, "${activity.packageName}.fileprovider", apkFile
+        )
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "application/vnd.android.package-archive")
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+        }
+        activity.startActivity(intent)
     }
 
     private fun showNoUpdateDialog(activity: Activity) {
         MaterialAlertDialogBuilder(activity, R.style.ThemeOverlay_ClintBrowser_Dialog)
-            .setTitle("You're up to date")
-            .setMessage("Clint Browser is running the latest version.")
-            .setPositiveButton("OK", null)
+            .setTitle(activity.getString(R.string.update_up_to_date_title))
+            .setMessage(activity.getString(R.string.update_up_to_date_message))
+            .setPositiveButton(activity.getString(R.string.action_ok), null)
             .show()
     }
 
     private fun showErrorDialog(activity: Activity) {
         MaterialAlertDialogBuilder(activity, R.style.ThemeOverlay_ClintBrowser_Dialog)
-            .setTitle("Update check failed")
-            .setMessage("Could not reach the update server. Please check your connection and try again.")
-            .setPositiveButton("OK", null)
+            .setTitle(activity.getString(R.string.update_check_failed_title))
+            .setMessage(activity.getString(R.string.update_check_failed_message))
+            .setPositiveButton(activity.getString(R.string.action_ok), null)
             .show()
     }
 
@@ -145,37 +333,6 @@ object UpdateChecker {
         return result.joinToString("\n").trim()
     }
 
-    private fun buildChangelogSpannable(markdown: String): SpannableStringBuilder {
-        val sb = SpannableStringBuilder()
-        for (line in markdown.split("\n")) {
-            val trimmed = line.trim()
-            when {
-                trimmed.startsWith("## ") -> {
-                    val text = trimmed.removePrefix("## ").trim() + "\n"
-                    val start = sb.length
-                    sb.append(text)
-                    sb.setSpan(StyleSpan(Typeface.BOLD), start, sb.length - 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    sb.setSpan(RelativeSizeSpan(1.15f), start, sb.length - 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                }
-                trimmed.startsWith("### ") -> {
-                    val text = trimmed.removePrefix("### ").trim() + "\n"
-                    val start = sb.length
-                    sb.append(text)
-                    sb.setSpan(StyleSpan(Typeface.BOLD), start, sb.length - 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                }
-                trimmed.startsWith("- ") -> {
-                    val text = trimmed.removePrefix("- ").trim() + "\n"
-                    val start = sb.length
-                    sb.append(text)
-                    sb.setSpan(BulletSpan(16), start, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                }
-                trimmed.isEmpty() -> sb.append("\n")
-                else -> sb.append(trimmed + "\n")
-            }
-        }
-        return sb
-    }
-
     private fun getDeviceArch(): String {
         val abi = Build.SUPPORTED_ABIS.firstOrNull() ?: return "universal"
         return when {
@@ -186,6 +343,4 @@ object UpdateChecker {
             else -> "universal"
         }
     }
-
-
 }

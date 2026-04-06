@@ -2,11 +2,17 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <SwitchPreferenceCompat
-        app:key="hide_bars_on_scroll"
-        app:title="@string/hide_bars_on_scroll"
-        app:summary="@string/hide_bars_on_scroll_summary"
-        app:defaultValue="true"
-        app:icon="@drawable/ic_globe_24" />
+    <Preference
+        app:key="search_engine"
+        app:title="@string/search_engine"
+        app:summary="DuckDuckGo"
+        app:icon="@drawable/ic_search_24"
+        app:singleLineTitle="false" />
+
+    <Preference
+        app:key="default_browser"
+        app:title="@string/default_browser_title"
+        app:icon="@drawable/ic_language_24"
+        app:singleLineTitle="false" />
 
 </PreferenceScreen>

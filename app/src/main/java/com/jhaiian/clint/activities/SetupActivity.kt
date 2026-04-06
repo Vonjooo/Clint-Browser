@@ -1,26 +1,36 @@
 package com.jhaiian.clint.activities
 
+import android.app.role.RoleManager
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.View
 import android.widget.CheckBox
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.preference.PreferenceManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.jhaiian.clint.R
 import com.jhaiian.clint.crash.CrashHandler
 import com.jhaiian.clint.databinding.ActivitySetupBinding
 import com.jhaiian.clint.network.DohManager
 
-class SetupActivity : AppCompatActivity() {
+class SetupActivity : ClintActivity() {
 
     private lateinit var binding: ActivitySetupBinding
     private var selectedEngine = "duckduckgo"
+
+    private val browserRoleLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        refreshPage3()
+    }
     private var selectedDohMode = DohManager.MODE_OFF
     private var selectedProvider = DohManager.PROVIDER_CLOUDFLARE
     private var currentPage = 0
@@ -45,7 +55,14 @@ class SetupActivity : AppCompatActivity() {
         setupPage0()
         setupPage1()
         setupPage2()
+        setupPage3()
         showPage(0)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (currentPage == 2) refreshPage2Button()
+        if (currentPage == 3) refreshPage3()
     }
 
     private fun setupPage0() {
@@ -61,8 +78,12 @@ class SetupActivity : AppCompatActivity() {
         btnContinue.alpha = 0.5f
         btnContinue.setOnClickListener { showPage(1) }
 
-        tvPrivacy.setOnClickListener { openUrl(PRIVACY_POLICY_URL) }
-        tvTerms.setOnClickListener { openUrl(TERMS_URL) }
+        tvPrivacy.setOnClickListener {
+            com.jhaiian.clint.ui.DocumentViewer.show(this, "Privacy Policy", com.jhaiian.clint.ui.DocumentViewer.PRIVACY_POLICY_URL)
+        }
+        tvTerms.setOnClickListener {
+            com.jhaiian.clint.ui.DocumentViewer.show(this, "Terms of Service", com.jhaiian.clint.ui.DocumentViewer.TERMS_URL)
+        }
     }
 
     private fun setupPage1() {
@@ -90,12 +111,59 @@ class SetupActivity : AppCompatActivity() {
         ).forEach { (card, provider) ->
             card.setOnClickListener { selectProvider(provider) }
         }
-        binding.btnGetStarted.setOnClickListener { saveAndProceed() }
+    }
+
+    private fun refreshPage2Button() {
+        if (isClintDefaultBrowser()) {
+            binding.btnGetStarted.text = getString(R.string.get_started)
+            binding.btnGetStarted.setOnClickListener { saveAndProceed() }
+        } else {
+            binding.btnGetStarted.text = getString(R.string.next)
+            binding.btnGetStarted.setOnClickListener { showPage(3) }
+        }
+    }
+
+    private fun setupPage3() {
+        binding.btnSkipDefaultBrowser.setOnClickListener { saveAndProceed() }
+    }
+
+    private fun refreshPage3() {
+        if (isClintDefaultBrowser()) {
+            binding.ivDefaultBrowserCheck.visibility = View.VISIBLE
+            binding.btnSetDefaultBrowser.text = getString(R.string.get_started)
+            binding.btnSetDefaultBrowser.setOnClickListener { saveAndProceed() }
+        } else {
+            binding.ivDefaultBrowserCheck.visibility = View.GONE
+            binding.btnSetDefaultBrowser.text = getString(R.string.setup_default_browser_set_button)
+            binding.btnSetDefaultBrowser.setOnClickListener { openDefaultBrowserPicker() }
+        }
     }
 
     private fun showPage(page: Int) {
         currentPage = page
         binding.viewFlipper.displayedChild = page
+        if (page == 2) refreshPage2Button()
+        if (page == 3) refreshPage3()
+    }
+
+    private fun isClintDefaultBrowser(): Boolean {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://"))
+        val info = packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+        return info?.activityInfo?.packageName == packageName
+    }
+
+    private fun openDefaultBrowserPicker() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            try {
+                val roleManager = getSystemService(RoleManager::class.java)
+                if (!roleManager.isRoleHeld(RoleManager.ROLE_BROWSER)) {
+                    val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_BROWSER)
+                    browserRoleLauncher.launch(intent)
+                    return
+                }
+            } catch (_: Exception) {}
+        }
+        startActivity(Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS))
     }
 
     private fun onNextFromPage1() {
@@ -169,10 +237,6 @@ class SetupActivity : AppCompatActivity() {
     private fun startMainActivity() {
         startActivity(Intent(this, MainActivity::class.java))
         finish()
-    }
-
-    private fun openUrl(url: String) {
-        runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
     }
 
     override fun onBackPressed() {

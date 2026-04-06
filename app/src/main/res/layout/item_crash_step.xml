@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:layout_marginBottom="6dp">
+
+    <TextView
+        android:id="@+id/tvStepNumber"
+        android:layout_width="20dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/purple_200"
+        android:textSize="13sp"
+        android:fontFamily="sans-serif-medium" />
+
+    <TextView
+        android:id="@+id/tvStepText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="@color/on_surface_medium"
+        android:textSize="13sp"
+        android:lineSpacingMultiplier="1.4" />
+
+</LinearLayout>

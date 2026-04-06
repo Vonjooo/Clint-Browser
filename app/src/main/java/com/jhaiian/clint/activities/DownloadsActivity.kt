@@ -9,7 +9,6 @@ import android.provider.Settings
 import android.webkit.MimeTypeMap
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -22,7 +21,7 @@ import com.jhaiian.clint.downloads.ClintDownloadManager
 import com.jhaiian.clint.downloads.ClintDownloadManager.DownloadItem
 import com.jhaiian.clint.downloads.DownloadsAdapter
 
-class DownloadsActivity : AppCompatActivity() {
+class DownloadsActivity : ClintActivity() {
 
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var adapter: DownloadsAdapter
@@ -90,10 +89,10 @@ class DownloadsActivity : AppCompatActivity() {
 
     private fun handleApkOpen(item: DownloadItem) {
         MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_ClintBrowser_Dialog)
-            .setTitle("Install APK")
-            .setMessage("Do you want to install \"${item.filename}\"?\n\nOnly install APKs from sources you trust.")
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("Install") { _, _ ->
+            .setTitle(getString(R.string.install_apk_dialog_title))
+            .setMessage(getString(R.string.install_apk_dialog_message, item.filename))
+            .setNegativeButton(getString(R.string.action_cancel), null)
+            .setPositiveButton(getString(R.string.install_apk_dialog_confirm)) { _, _ ->
                 if (packageManager.canRequestPackageInstalls()) {
                     launchApkInstall(item)
                 } else {
@@ -105,10 +104,10 @@ class DownloadsActivity : AppCompatActivity() {
 
     private fun showInstallPermissionDialog(item: DownloadItem) {
         MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_ClintBrowser_Dialog)
-            .setTitle("Permission required")
-            .setMessage("To install APK files, Clint needs permission to install unknown apps. You'll be taken to Settings to enable it.")
-            .setNegativeButton("Cancel", null)
-            .setPositiveButton("Open Settings") { _, _ ->
+            .setTitle(getString(R.string.install_apk_permission_title))
+            .setMessage(getString(R.string.install_apk_permission_message))
+            .setNegativeButton(getString(R.string.action_cancel), null)
+            .setPositiveButton(getString(R.string.action_open_settings)) { _, _ ->
                 pendingApkItem = item
                 installPermissionLauncher.launch(
                     Intent(

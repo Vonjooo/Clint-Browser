@@ -60,10 +60,14 @@ class DownloadsAdapter(
     }
 
     private fun bindProgress(holder: ViewHolder, item: ClintDownloadManager.DownloadItem) {
+        val ctx = holder.itemView.context
         when (item.status) {
             ClintDownloadManager.DownloadStatus.DOWNLOADING -> {
                 val pct = item.progressPercent
-                holder.status.text = if (pct >= 0) "$pct%  •  ${formatBytes(item.bytesDownloaded)}" else "Downloading…"
+                holder.status.text = if (pct >= 0)
+                    ctx.getString(R.string.download_status_progress, pct, formatBytes(item.bytesDownloaded))
+                else
+                    ctx.getString(R.string.downloading)
                 holder.progress.isVisible = true
                 holder.progress.isIndeterminate = pct < 0
                 if (pct >= 0) holder.progress.progress = pct
@@ -72,20 +76,21 @@ class DownloadsAdapter(
                 holder.btnCancel.setOnClickListener { onCancel(item.id) }
             }
             ClintDownloadManager.DownloadStatus.COMPLETE -> {
-                holder.status.text = "Complete  •  ${formatBytes(item.bytesDownloaded)}"
+                holder.status.text = ctx.getString(R.string.download_status_complete, formatBytes(item.bytesDownloaded))
                 holder.progress.isVisible = false
                 holder.btnCancel.isVisible = false
                 holder.btnOpen.isVisible = true
                 holder.btnOpen.setOnClickListener { onOpen(item) }
             }
             ClintDownloadManager.DownloadStatus.FAILED -> {
-                holder.status.text = "Failed: ${item.errorMessage ?: "Unknown error"}"
+                holder.status.text = ctx.getString(R.string.download_status_failed,
+                    item.errorMessage ?: ctx.getString(R.string.download_error_unknown))
                 holder.progress.isVisible = false
                 holder.btnCancel.isVisible = false
                 holder.btnOpen.isVisible = false
             }
             ClintDownloadManager.DownloadStatus.CANCELLED -> {
-                holder.status.text = "Cancelled"
+                holder.status.text = ctx.getString(R.string.download_status_cancelled)
                 holder.progress.isVisible = false
                 holder.btnCancel.isVisible = false
                 holder.btnOpen.isVisible = false

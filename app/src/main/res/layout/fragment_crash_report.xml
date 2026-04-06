@@ -111,13 +111,20 @@
                     android:fontFamily="sans-serif-medium"
                     android:layout_marginBottom="8dp" />
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/crash_steps"
-                    android:textColor="@color/on_surface_medium"
-                    android:textSize="13sp"
-                    android:lineSpacingMultiplier="1.6" />
+                <include layout="@layout/item_crash_step"
+                    android:id="@+id/step1" />
+                <include layout="@layout/item_crash_step"
+                    android:id="@+id/step2" />
+                <include layout="@layout/item_crash_step"
+                    android:id="@+id/step3" />
+                <include layout="@layout/item_crash_step"
+                    android:id="@+id/step4" />
+                <include layout="@layout/item_crash_step"
+                    android:id="@+id/step5" />
+                <include layout="@layout/item_crash_step"
+                    android:id="@+id/step6" />
+                <include layout="@layout/item_crash_step"
+                    android:id="@+id/step7" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

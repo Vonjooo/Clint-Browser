@@ -29,6 +29,10 @@ import android.widget.PopupWindow
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.webkit.ScriptHandler
+import androidx.webkit.WebSettingsCompat
+import androidx.webkit.WebViewCompat
+import androidx.webkit.WebViewFeature
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -49,16 +53,81 @@ import com.jhaiian.clint.webview.ClintSwipeRefreshLayout
 import com.jhaiian.clint.webview.ClintWebChromeClient
 import com.jhaiian.clint.webview.ClintWebViewClient
 
-class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
+class MainActivity : ClintActivity(), TabSwitcherSheet.Listener {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var prefs: SharedPreferences
     private val tabManager = TabManager()
     private var isDesktopMode = false
+    private val desktopScriptHandlers = mutableMapOf<String, ScriptHandler>()
+
+    companion object {
+        private val DESKTOP_SCRIPT = """
+(function(){
+try{Object.defineProperty(navigator,'maxTouchPoints',{get:function(){return 0;},configurable:true});}catch(e){}
+try{Object.defineProperty(navigator,'msMaxTouchPoints',{get:function(){return 0;},configurable:true});}catch(e){}
+try{Object.defineProperty(navigator,'platform',{get:function(){return 'Win32';},configurable:true});}catch(e){}
+try{Object.defineProperty(window,'ontouchstart',{value:undefined,configurable:true,writable:true});}catch(e){}
+try{Object.defineProperty(window,'ontouchmove',{value:undefined,configurable:true,writable:true});}catch(e){}
+try{Object.defineProperty(window,'ontouchend',{value:undefined,configurable:true,writable:true});}catch(e){}
+var fixVp=function(){
+  var m=document.querySelector('meta[name="viewport"]');
+  if(m){if(m.content.indexOf('device-width')!==-1)m.content='width=1280';}
+  else if(document.head){var n=document.createElement('meta');n.name='viewport';n.content='width=1280';document.head.insertBefore(n,document.head.firstChild);}
+};
+new MutationObserver(fixVp).observe(document.documentElement,{childList:true,subtree:true});
+document.addEventListener('DOMContentLoaded',fixVp);
+if(document.readyState!=='loading')fixVp();
+})();
+        """.trimIndent()
+    }
 
     private val notifPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) {}
+
+    private var pendingFileChooserCallback: android.webkit.ValueCallback<Array<android.net.Uri>>? = null
+    private var pendingFileChooserParams: android.webkit.WebChromeClient.FileChooserParams? = null
+    private val cameraPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        val cb = pendingFileChooserCallback
+        val params = pendingFileChooserParams
+        pendingFileChooserCallback = null
+        pendingFileChooserParams = null
+        if (granted && cb != null && params != null) {
+            launchFileChooser(cb, params)
+        } else if (cb != null) {
+            cb.onReceiveValue(null)
+        }
+    }
+
+    private var filePathCallback: android.webkit.ValueCallback<Array<android.net.Uri>>? = null
+    private var cameraImageUri: android.net.Uri? = null
+    private var cameraVideoUri: android.net.Uri? = null
+    private val fileChooserLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val uris = if (result.resultCode == android.app.Activity.RESULT_OK) {
+            val data = result.data
+            when {
+                data?.clipData != null -> {
+                    val clip = data.clipData!!
+                    Array(clip.itemCount) { clip.getItemAt(it).uri }
+                }
+                data?.data != null -> arrayOf(data.data!!)
+                cameraImageUri != null -> arrayOf(cameraImageUri!!)
+                else -> null
+            }
+        } else {
+            cameraImageUri?.let { contentResolver.delete(it, null, null) }
+            null
+        }
+        filePathCallback?.onReceiveValue(uris)
+        filePathCallback = null
+        cameraImageUri = null
+        cameraVideoUri = null
+    }
 
     private val prefsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         when (key) {
@@ -67,6 +136,10 @@ class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
             "custom_user_agent" -> applyUserAgent()
             "block_trackers" -> reattachWebClients()
             "doh_mode", "doh_provider" -> { DohManager.invalidate(); reattachWebClients() }
+            "force_dark_web" -> {
+                tabManager.tabs.forEach { applyWebDarkMode(it.webView) }
+                tabManager.activeTab?.webView?.reload()
+            }
             "hide_bars_on_scroll" -> {
                 if (!prefs.getBoolean("hide_bars_on_scroll", true)) animateBars(hide = false, animated = false)
             }
@@ -76,6 +149,7 @@ class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
     private var topBarFullHeight = 0
     private var bottomBarFullHeight = 0
     private var statusBarInsetPx = 0
+    private var cachedStatusBarInsetPx = 0
     private var barsHidden = false
     private var barAnimator: ValueAnimator? = null
     private var nestedScrollActive = false
@@ -88,10 +162,13 @@ class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
         setContentView(binding.root)
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
         prefs.registerOnSharedPreferenceChangeListener(prefsListener)
+        applyStatusBarVisibility()
         ViewCompat.setOnApplyWindowInsetsListener(binding.toolbarTop) { v, insets ->
             val statusBars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
-            statusBarInsetPx = statusBars.top
-            v.setPadding(0, statusBars.top, 0, 0)
+            if (statusBars.top > 0) cachedStatusBarInsetPx = statusBars.top
+            val effectivePadding = if (prefs.getBoolean("hide_status_bar", false)) 0 else statusBars.top
+            statusBarInsetPx = effectivePadding
+            v.setPadding(0, effectivePadding, 0, 0)
             v.post {
                 if (topBarFullHeight == 0 && v.height > 0) {
                     topBarFullHeight = v.height
@@ -109,6 +186,7 @@ class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
             insets
         }
         ClintDownloadManager.createNotificationChannel(this)
+        ClintDownloadManager.init(this)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
                 != PackageManager.PERMISSION_GRANTED
@@ -116,8 +194,11 @@ class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
             notifPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
         }
         if (prefs.getBoolean("check_update_on_launch", true)) {
+            val skipOnMetered = prefs.getBoolean("skip_update_on_metered", true)
             val isBeta = prefs.getBoolean("beta_channel", false)
-            UpdateChecker.check(this, isBeta, silent = true)
+            if (!skipOnMetered || !isNetworkMetered()) {
+                UpdateChecker.check(this, isBeta, silent = true)
+            }
         }
         setupSwipeRefresh()
         setupAddressBar()
@@ -176,6 +257,7 @@ class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
         val webView = createWebView(false)
         val tab = BrowserTab(url = url, webView = webView)
         tabManager.add(tab)
+        if (isDesktopMode) addDesktopScript(tab)
         webView.webViewClient = ClintWebViewClient(prefs) { tabManager.activeTab?.id == tab.id }
         webView.webChromeClient = ClintWebChromeClient(
             isActive = { tabManager.activeTab?.id == tab.id },
@@ -184,7 +266,21 @@ class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
                 if (tabManager.activeTab?.id == tab.id) updateTabCount()
             },
             onFullscreenShow = { view, cb -> onShowCustomView(view, cb) },
-            onFullscreenHide = { exitFullscreen() }
+            onFullscreenHide = { exitFullscreen() },
+            onFileChooser = { callback, params -> onShowFileChooser(callback, params) },
+            onNewWindowRequest = { url ->
+                val uri = android.net.Uri.parse(url)
+                val scheme = uri.scheme?.lowercase()
+                val activeWebView = tabManager.activeTab?.webView
+                val client = activeWebView?.webViewClient as? ClintWebViewClient
+                if (scheme == "http" || scheme == "https") {
+                    if (client == null || !client.tryOpenInApp(activeWebView, uri)) {
+                        openNewTab(isIncognito = tab.isIncognito, url = url)
+                    }
+                } else {
+                    openNewTab(isIncognito = tab.isIncognito, url = url)
+                }
+            }
         )
         webView.loadUrl(url)
     }
@@ -280,6 +376,7 @@ class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
     }
 
     private fun queryNestedScroll(webView: WebView) {
+        if (isYouTubeShorts()) return
         webView.evaluateJavascript(
             "(typeof window.__clintNestedScrolled !== 'undefined' && window.__clintNestedScrolled).toString()"
         ) { result ->
@@ -287,9 +384,14 @@ class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
         }
     }
 
+    private fun isYouTubeShorts(): Boolean {
+        val url = tabManager.activeTab?.webView?.url ?: return false
+        return url.contains("youtube.com/shorts", ignoreCase = true)
+    }
+
     private fun setupSwipeRefresh() {
         binding.swipeRefresh.canChildScrollUpCallback = {
-            barsHidden || run {
+            barsHidden || isYouTubeShorts() || run {
                 val wv = tabManager.activeTab?.webView
                 wv != null && (wv.canScrollVertically(-1) || nestedScrollActive)
             }
@@ -330,6 +432,34 @@ class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
         tabManager.activeTab?.webView?.reload()
     }
 
+    private val darkModeCss = """
+        (function() {
+            var id = '__clint_dark_mode';
+            var existing = document.getElementById(id);
+            if (existing) { existing.remove(); return; }
+            var s = document.createElement('style');
+            s.id = id;
+            s.textContent = 'html { filter: invert(100%) hue-rotate(180deg) !important; background: #fff !important; } img, video, canvas, picture, svg, iframe { filter: invert(100%) hue-rotate(180deg) !important; }';
+            (document.head || document.documentElement).appendChild(s);
+        })();
+    """.trimIndent()
+
+    @Suppress("DEPRECATION")
+    private fun applyWebDarkMode(webView: WebView) {
+        val enabled = prefs.getBoolean("force_dark_web", false)
+        val settings = webView.settings
+        when {
+            WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING) ->
+                WebSettingsCompat.setAlgorithmicDarkeningAllowed(settings, enabled)
+            WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK) ->
+                WebSettingsCompat.setForceDark(
+                    settings,
+                    if (enabled) WebSettingsCompat.FORCE_DARK_ON else WebSettingsCompat.FORCE_DARK_OFF
+                )
+            // API < 29: CSS injection handled in onPageFinished
+        }
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
     private fun reattachWebClients() {
         tabManager.tabs.forEach { tab ->
@@ -362,6 +492,7 @@ class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
         settings.domStorageEnabled = !isIncognito
         settings.cacheMode = if (isIncognito) WebSettings.LOAD_NO_CACHE else WebSettings.LOAD_DEFAULT
         settings.setSupportZoom(true)
+        settings.setSupportMultipleWindows(true)
         settings.builtInZoomControls = true
         settings.displayZoomControls = false
         settings.loadWithOverviewMode = true
@@ -382,17 +513,27 @@ class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
         webView.setDownloadListener { url, userAgent, contentDisposition, mimetype, _ ->
             val filename = URLUtil.guessFileName(url, contentDisposition, mimetype)
             ClintDownloadManager.enqueue(this, url, filename, userAgent)
-            Toast.makeText(applicationContext, "Downloading $filename", Toast.LENGTH_SHORT).show()
         }
+        applyWebDarkMode(webView)
         return webView
+    }
+
+    private fun addDesktopScript(tab: BrowserTab) {
+        if (!WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) return
+        removeDesktopScript(tab)
+        desktopScriptHandlers[tab.id] = WebViewCompat.addDocumentStartJavaScript(tab.webView, DESKTOP_SCRIPT, setOf("*"))
+    }
+
+    private fun removeDesktopScript(tab: BrowserTab) {
+        desktopScriptHandlers.remove(tab.id)?.remove()
     }
 
     private fun buildUserAgent(): String {
         return when {
             isDesktopMode ->
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
             prefs.getBoolean("custom_user_agent", true) ->
-                "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36"
+                "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Mobile Safari/537.36"
             else ->
                 WebSettings.getDefaultUserAgent(this)
         }
@@ -402,6 +543,7 @@ class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
         val webView = createWebView(isIncognito)
         val tab = BrowserTab(isIncognito = isIncognito, webView = webView)
         val index = tabManager.add(tab)
+        if (isDesktopMode) addDesktopScript(tab)
         webView.webViewClient = ClintWebViewClient(prefs) { tabManager.activeTab?.id == tab.id }
         webView.webChromeClient = ClintWebChromeClient(
             isActive = { tabManager.activeTab?.id == tab.id },
@@ -410,7 +552,21 @@ class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
                 if (tabManager.activeTab?.id == tab.id) updateTabCount()
             },
             onFullscreenShow = { view, cb -> onShowCustomView(view, cb) },
-            onFullscreenHide = { exitFullscreen() }
+            onFullscreenHide = { exitFullscreen() },
+            onFileChooser = { callback, params -> onShowFileChooser(callback, params) },
+            onNewWindowRequest = { url ->
+                val uri = android.net.Uri.parse(url)
+                val scheme = uri.scheme?.lowercase()
+                val activeWebView = tabManager.activeTab?.webView
+                val client = activeWebView?.webViewClient as? ClintWebViewClient
+                if (scheme == "http" || scheme == "https") {
+                    if (client == null || !client.tryOpenInApp(activeWebView, uri)) {
+                        openNewTab(isIncognito = isIncognito, url = url)
+                    }
+                } else {
+                    openNewTab(isIncognito = isIncognito, url = url)
+                }
+            }
         )
         tabManager.switchTo(index)
         attachActiveWebView()
@@ -521,6 +677,39 @@ class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
             val desktopCheck = popupView.findViewById<ImageView>(R.id.desktop_mode_check)
             desktopCheck.alpha = if (isDesktopMode) 1f else 0f
 
+            val openInAppItem = popupView.findViewById<android.view.View>(R.id.menu_open_in_app)
+            val openInAppText = popupView.findViewById<android.widget.TextView>(R.id.menu_open_in_app_text)
+            val currentUrl = tabManager.activeTab?.webView?.url
+            val currentUri = currentUrl?.let { runCatching { android.net.Uri.parse(it) }.getOrNull() }
+            val webClient = tabManager.activeTab?.webView?.webViewClient as? com.jhaiian.clint.webview.ClintWebViewClient
+            val appMatches = if (currentUri != null && webClient != null &&
+                (currentUri.scheme == "http" || currentUri.scheme == "https")) {
+                webClient.resolveAppMatches(currentUri, this)
+            } else emptyList()
+
+            if (appMatches.isEmpty()) {
+                openInAppItem.isEnabled = false
+                openInAppItem.alpha = 0.38f
+                openInAppText.text = getString(R.string.menu_open_in_app)
+            } else if (appMatches.size == 1) {
+                val appName = appMatches[0].loadLabel(packageManager).toString()
+                openInAppText.text = getString(R.string.menu_open_in_named_app, appName)
+                openInAppItem.setOnClickListener {
+                    popup.dismiss()
+                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, currentUri)
+                        .setPackage(appMatches[0].activityInfo.packageName)
+                        .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                    runCatching { startActivity(intent) }
+                }
+            } else {
+                openInAppText.text = getString(R.string.menu_open_in_app)
+                openInAppItem.setOnClickListener {
+                    popup.dismiss()
+                    val wv = tabManager.activeTab?.webView ?: return@setOnClickListener
+                    webClient?.tryOpenInApp(wv, currentUri!!)
+                }
+            }
+
             popupView.findViewById<View>(R.id.menu_new_tab).setOnClickListener {
                 popup.dismiss(); openNewTab(false)
             }
@@ -546,11 +735,11 @@ class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
             popupView.findViewById<View>(R.id.menu_desktop_mode).setOnClickListener {
                 isDesktopMode = !isDesktopMode
                 desktopCheck.alpha = if (isDesktopMode) 1f else 0f
-                val activeWebView = tabManager.activeTab?.webView
-                activeWebView?.settings?.userAgentString = buildUserAgent()
-                activeWebView?.settings?.useWideViewPort = isDesktopMode
-                activeWebView?.settings?.loadWithOverviewMode = isDesktopMode
-                activeWebView?.reload()
+                tabManager.tabs.forEach { tab ->
+                    tab.webView.settings.userAgentString = buildUserAgent()
+                    if (isDesktopMode) addDesktopScript(tab) else removeDesktopScript(tab)
+                }
+                tabManager.activeTab?.webView?.reload()
                 popup.dismiss()
             }
             popupView.findViewById<View>(R.id.menu_settings).setOnClickListener {
@@ -577,6 +766,8 @@ class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
 
     override fun onTabSelected(index: Int) { tabManager.switchTo(index); attachActiveWebView() }
     override fun onTabClosed(index: Int) {
+        val tab = tabManager.tabs.getOrNull(index)
+        tab?.let { removeDesktopScript(it) }
         val wasActive = index == tabManager.activeIndex
         tabManager.closeTab(index)
         if (tabManager.count == 0) openNewTab(false)
@@ -632,7 +823,15 @@ class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
         binding.progressBar.visibility = View.INVISIBLE
         binding.btnRefresh.setImageResource(R.drawable.ic_refresh_24)
         updateNavigationState()
-        tabManager.activeTab?.webView?.let { injectScrollTracker(it) }
+        tabManager.activeTab?.webView?.let { wv ->
+            injectScrollTracker(wv)
+            if (prefs.getBoolean("force_dark_web", false)
+                && !WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING)
+                && !WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)
+            ) {
+                wv.evaluateJavascript(darkModeCss, null)
+            }
+        }
         nestedScrollActive = false
         updateBookmarkIcon()
     }
@@ -680,14 +879,25 @@ class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
         binding.fullscreenContainer.visibility = View.VISIBLE
         binding.toolbarTop.visibility = View.GONE
         binding.bottomBar.visibility = View.GONE
-        window.decorView.systemUiVisibility = (
-            View.SYSTEM_UI_FLAG_FULLSCREEN or
-            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-            View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-        )
+        val ctrl = androidx.core.view.WindowCompat.getInsetsController(window, window.decorView)
+        ctrl.hide(WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars())
+        ctrl.systemBarsBehavior =
+            androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        tabManager.activeTab?.webView?.evaluateJavascript(
+            "(function(){ var v = document.querySelector('video'); return v ? v.videoWidth + ',' + v.videoHeight : '0,0'; })()"
+        ) { result ->
+            val parts = result?.trim('"')?.split(",")
+            val vw = parts?.getOrNull(0)?.toIntOrNull() ?: 0
+            val vh = parts?.getOrNull(1)?.toIntOrNull() ?: 0
+            requestedOrientation = when {
+                vw > 0 && vh > 0 && vw >= vh ->
+                    android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                vw > 0 && vh > 0 && vh > vw ->
+                    android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
+                else ->
+                    android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            }
+        }
     }
 
     fun exitFullscreen() {
@@ -696,13 +906,24 @@ class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
         fullscreenView?.let { binding.fullscreenContainer.removeView(it) }
         fullscreenView = null
         binding.fullscreenContainer.visibility = View.GONE
-        binding.toolbarTop.visibility = View.VISIBLE
-        binding.bottomBar.visibility = View.VISIBLE
         barAnimator?.cancel()
         barsHidden = false
-        binding.toolbarTop.updateLayoutParams { height = topBarFullHeight }
-        binding.bottomBar.updateLayoutParams { height = bottomBarFullHeight }
-        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+        nestedScrollActive = false
+        if (topBarFullHeight > 0) binding.toolbarTop.updateLayoutParams { height = topBarFullHeight }
+        if (bottomBarFullHeight > 0) binding.bottomBar.updateLayoutParams { height = bottomBarFullHeight }
+        binding.toolbarTop.visibility = View.VISIBLE
+        binding.bottomBar.visibility = View.VISIBLE
+        binding.swipeRefresh.isEnabled = true
+        val ctrl = androidx.core.view.WindowCompat.getInsetsController(window, window.decorView)
+        ctrl.show(WindowInsetsCompat.Type.navigationBars())
+        applyStatusBarVisibility()
+        binding.root.post {
+            requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            topBarFullHeight = 0
+            bottomBarFullHeight = 0
+            ViewCompat.requestApplyInsets(binding.toolbarTop)
+            ViewCompat.requestApplyInsets(binding.bottomBar)
+        }
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
@@ -715,5 +936,140 @@ class MainActivity : AppCompatActivity(), TabSwitcherSheet.Listener {
             if (wv?.canGoBack() == true) { wv.goBack(); return true }
         }
         return super.onKeyDown(keyCode, event)
+    }
+
+    private fun onShowFileChooser(
+        callback: android.webkit.ValueCallback<Array<android.net.Uri>>,
+        params: android.webkit.WebChromeClient.FileChooserParams
+    ): Boolean {
+        filePathCallback?.onReceiveValue(null)
+        filePathCallback = null
+
+        val hasCameraPermission = androidx.core.content.ContextCompat.checkSelfPermission(
+            this, android.Manifest.permission.CAMERA
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+
+        if (!hasCameraPermission) {
+            pendingFileChooserCallback = callback
+            pendingFileChooserParams = params
+            if (shouldShowRequestPermissionRationale(android.Manifest.permission.CAMERA)) {
+                com.google.android.material.dialog.MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_ClintBrowser_Dialog)
+                    .setTitle(getString(R.string.camera_permission_title))
+                    .setMessage(getString(R.string.camera_permission_message))
+                    .setCancelable(false)
+                    .setNegativeButton(getString(R.string.action_not_now)) { _, _ ->
+                        val cb = pendingFileChooserCallback
+                        pendingFileChooserCallback = null
+                        pendingFileChooserParams = null
+                        cb?.onReceiveValue(null)
+                    }
+                    .setPositiveButton(getString(R.string.action_allow)) { _, _ ->
+                        cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
+                    }
+                    .show()
+            } else {
+                cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
+            }
+            return true
+        }
+
+        return launchFileChooser(callback, params)
+    }
+
+    private fun launchFileChooser(
+        callback: android.webkit.ValueCallback<Array<android.net.Uri>>,
+        params: android.webkit.WebChromeClient.FileChooserParams
+    ): Boolean {
+        filePathCallback = callback
+
+        val accept = params.acceptTypes?.joinToString(",") ?: "*/*"
+        val isImageOnly = accept.contains("image") && !accept.contains("video") && !accept.contains("audio") && !accept.contains("*/*")
+        val isVideoOnly = accept.contains("video") && !accept.contains("image") && !accept.contains("*/*")
+        val allowMultiple = params.mode == android.webkit.WebChromeClient.FileChooserParams.MODE_OPEN_MULTIPLE
+
+        val extraIntents = mutableListOf<android.content.Intent>()
+
+        if (!isVideoOnly) {
+            try {
+                val values = android.content.ContentValues().apply {
+                    put(android.provider.MediaStore.Images.Media.TITLE, "clint_capture_${System.currentTimeMillis()}")
+                    put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                }
+                val uri = contentResolver.insert(
+                    android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values
+                )
+                if (uri != null) {
+                    cameraImageUri = uri
+                    extraIntents.add(
+                        android.content.Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE).apply {
+                            putExtra(android.provider.MediaStore.EXTRA_OUTPUT, uri)
+                        }
+                    )
+                }
+            } catch (_: Exception) {}
+        }
+
+        if (!isImageOnly) {
+            try {
+                extraIntents.add(
+                    android.content.Intent(android.provider.MediaStore.Audio.Media.RECORD_SOUND_ACTION)
+                )
+            } catch (_: Exception) {}
+            try {
+                extraIntents.add(
+                    android.content.Intent(android.provider.MediaStore.ACTION_VIDEO_CAPTURE)
+                )
+            } catch (_: Exception) {}
+        }
+
+        val mimeType = when {
+            isImageOnly -> "image/*"
+            isVideoOnly -> "video/*"
+            accept.contains("audio") && !accept.contains("*/*") -> "audio/*"
+            else -> "*/*"
+        }
+
+        val contentIntent = android.content.Intent(android.content.Intent.ACTION_GET_CONTENT).apply {
+            type = mimeType
+            addCategory(android.content.Intent.CATEGORY_OPENABLE)
+            if (allowMultiple) putExtra(android.content.Intent.EXTRA_ALLOW_MULTIPLE, true)
+        }
+
+        val chooser = android.content.Intent.createChooser(contentIntent, null).apply {
+            if (extraIntents.isNotEmpty()) {
+                putExtra(android.content.Intent.EXTRA_INITIAL_INTENTS, extraIntents.toTypedArray())
+            }
+        }
+
+        try {
+            fileChooserLauncher.launch(chooser)
+        } catch (_: android.content.ActivityNotFoundException) {
+            filePathCallback = null
+            cameraImageUri = null
+            cameraVideoUri = null
+            return false
+        }
+        return true
+    }
+
+    private fun applyStatusBarVisibility() {
+        val hide = prefs.getBoolean("hide_status_bar", false)
+        val controller = androidx.core.view.WindowCompat.getInsetsController(window, window.decorView)
+        if (hide) {
+            controller.hide(WindowInsetsCompat.Type.statusBars())
+            statusBarInsetPx = 0
+            binding.toolbarTop.setPadding(0, 0, 0, 0)
+        } else {
+            controller.show(WindowInsetsCompat.Type.statusBars())
+            if (cachedStatusBarInsetPx > 0) {
+                statusBarInsetPx = cachedStatusBarInsetPx
+                binding.toolbarTop.setPadding(0, cachedStatusBarInsetPx, 0, 0)
+            }
+        }
+    }
+
+    private fun isNetworkMetered(): Boolean {
+        val cm = getSystemService(android.net.ConnectivityManager::class.java) ?: return false
+        return cm.isActiveNetworkMetered
     }
 }

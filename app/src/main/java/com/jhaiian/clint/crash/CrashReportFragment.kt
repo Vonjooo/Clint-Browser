@@ -6,9 +6,13 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -37,6 +41,7 @@ class CrashReportFragment : Fragment() {
 
         CrashHandler.deleteOldReports(requireContext())
         loadReports()
+        setupSteps()
         setupReportTemplate()
 
         binding.btnClearAll.setOnClickListener {
@@ -79,29 +84,19 @@ class CrashReportFragment : Fragment() {
         files.forEach { file ->
             val cardView = layoutInflater.inflate(R.layout.item_crash_report, container, false)
 
-            val tvTitle = cardView.findViewById<android.widget.TextView>(R.id.crashTitle)
-            val tvContent = cardView.findViewById<android.widget.TextView>(R.id.crashContent)
+            val tvTitle = cardView.findViewById<TextView>(R.id.crashTitle)
             val btnCopy = cardView.findViewById<android.widget.ImageButton>(R.id.btnCopyCrash)
             val btnDelete = cardView.findViewById<android.widget.ImageButton>(R.id.btnDeleteCrash)
-            val expandArea = cardView.findViewById<View>(R.id.crashExpandArea)
 
             val nameWithoutExt = file.nameWithoutExtension.removePrefix("crash_")
             val date = runCatching { fileDateFmt.parse(nameWithoutExt) }.getOrNull()
             tvTitle.text = date?.let { displayFmt.format(it) } ?: file.name
 
             val content = file.readText()
-            tvContent.text = content
-            tvContent.visibility = View.GONE
 
-            tvTitle.setOnClickListener {
-                expandArea.visibility = if (expandArea.visibility == View.GONE) View.VISIBLE else View.GONE
-            }
+            tvTitle.setOnClickListener { showCrashDialog(file, tvTitle.text.toString(), content) }
 
-            btnCopy.setOnClickListener {
-                val cm = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                cm.setPrimaryClip(ClipData.newPlainText("Clint Crash Report", content))
-                Toast.makeText(requireContext(), getString(R.string.crash_copied), Toast.LENGTH_SHORT).show()
-            }
+            btnCopy.setOnClickListener { copyToClipboard(content) }
 
             btnDelete.setOnClickListener {
                 file.delete()
@@ -109,6 +104,108 @@ class CrashReportFragment : Fragment() {
             }
 
             container.addView(cardView)
+        }
+    }
+
+    private fun showCrashDialog(file: File, title: String, content: String) {
+        val ctx = requireContext()
+        val dp = ctx.resources.displayMetrics.density
+
+        val logTv = TextView(ctx).apply {
+            text = content
+            setTextColor(0xCCFFFFFF.toInt())
+            textSize = 11f
+            typeface = android.graphics.Typeface.MONOSPACE
+            setPadding(64, 24, 64, 8)
+            setTextIsSelectable(true)
+        }
+
+        val divider = View(ctx).apply {
+            setBackgroundColor(0x1FFFFFFF)
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 1
+            ).also { it.topMargin = (8 * dp).toInt() }
+        }
+
+        fun makeBtn(label: String, color: Int) = TextView(ctx).apply {
+            text = label
+            setTextColor(color)
+            textSize = 14f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
+            val pad = (12 * dp).toInt()
+            setPadding(pad, pad, pad, pad)
+            background = android.util.TypedValue().let { tv ->
+                ctx.theme.resolveAttribute(android.R.attr.selectableItemBackground, tv, true)
+                androidx.core.content.ContextCompat.getDrawable(ctx, tv.resourceId)
+            }
+        }
+
+        val btnDelete = makeBtn(getString(R.string.action_delete), 0xFFCF6679.toInt())
+        val btnBack   = makeBtn(getString(R.string.back),          0x99FFFFFF.toInt())
+        val btnCopy   = makeBtn(getString(R.string.action_copy),   0xFFBA68C8.toInt())
+
+        val buttonRow = LinearLayout(ctx).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.END or Gravity.CENTER_VERTICAL
+            val hPad = (8 * dp).toInt()
+            val vPad = (4 * dp).toInt()
+            setPadding(hPad, vPad, hPad, vPad)
+            addView(btnDelete, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+            addView(btnBack)
+            addView(btnCopy)
+        }
+
+        val container = LinearLayout(ctx).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(ScrollView(ctx).apply {
+                addView(logTv)
+            }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
+            addView(divider)
+            addView(buttonRow)
+        }
+
+        val dialog = MaterialAlertDialogBuilder(ctx, R.style.ThemeOverlay_ClintBrowser_Dialog)
+            .setTitle(title)
+            .setView(container)
+            .setCancelable(false)
+            .create()
+
+        btnBack.setOnClickListener { dialog.dismiss() }
+
+        btnCopy.setOnClickListener {
+            copyToClipboard(content)
+            dialog.dismiss()
+        }
+
+        btnDelete.setOnClickListener {
+            file.delete()
+            dialog.dismiss()
+            loadReports()
+        }
+
+        dialog.show()
+    }
+
+    private fun copyToClipboard(content: String) {
+        val cm = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        cm.setPrimaryClip(ClipData.newPlainText("Clint Crash Report", content))
+        Toast.makeText(requireContext(), getString(R.string.crash_copied), Toast.LENGTH_SHORT).show()
+    }
+
+    private fun setupSteps() {
+        val steps = listOf(
+            binding.step1 to R.string.crash_step_reproduce,
+            binding.step2 to R.string.crash_step_expand,
+            binding.step3 to R.string.crash_step_copy,
+            binding.step4 to R.string.crash_step_open_github,
+            binding.step5 to R.string.crash_step_new_issue,
+            binding.step6 to R.string.crash_step_attach,
+            binding.step7 to R.string.crash_step_submit
+        )
+        steps.forEachIndexed { index, (stepBinding, stringRes) ->
+            stepBinding.tvStepNumber.text = "${index + 1}."
+            stepBinding.tvStepText.text = getString(stringRes)
         }
     }
 

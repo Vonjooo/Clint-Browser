@@ -3,14 +3,19 @@ package com.jhaiian.clint.webview
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.graphics.Bitmap
 import android.net.Uri
 import android.net.http.SslError
+import android.os.Build
 import android.webkit.SslErrorHandler
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.jhaiian.clint.R
 import com.jhaiian.clint.activities.MainActivity
 import com.jhaiian.clint.network.DohManager
 
@@ -18,6 +23,12 @@ class ClintWebViewClient(
     private val prefs: SharedPreferences,
     private val isActive: () -> Boolean = { true }
 ) : WebViewClient() {
+
+    private val cooldownDomains = mutableMapOf<String, Long>()
+
+    companion object {
+        private const val COOLDOWN_MS = 4000L
+    }
 
     private val trackerHosts = setOf(
         "googletagmanager.com", "google-analytics.com", "analytics.google.com",
@@ -27,6 +38,25 @@ class ClintWebViewClient(
         "pixel.facebook.com", "an.facebook.com", "stats.g.doubleclick.net",
         "pagead2.googlesyndication.com"
     )
+
+    private fun registeredDomain(host: String): String {
+        val parts = host.split(".")
+        return if (parts.size >= 2) parts.takeLast(2).joinToString(".") else host
+    }
+
+    private fun isInCooldown(host: String): Boolean {
+        val domain = registeredDomain(host)
+        val timestamp = cooldownDomains[domain] ?: return false
+        if (System.currentTimeMillis() - timestamp >= COOLDOWN_MS) {
+            cooldownDomains.remove(domain)
+            return false
+        }
+        return true
+    }
+
+    private fun startCooldown(host: String) {
+        cooldownDomains[registeredDomain(host)] = System.currentTimeMillis()
+    }
 
     override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
         super.onPageStarted(view, url, favicon)
@@ -48,69 +78,270 @@ class ClintWebViewClient(
     }
 
     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-        val url = request.url
-        val scheme = url.scheme ?: return true
+        val uri = request.url
+        val scheme = uri.scheme?.lowercase() ?: return true
 
         if (scheme == "intent") {
-            try {
-                val intent = Intent.parseUri(url.toString(), Intent.URI_INTENT_SCHEME)
-                val context = view.context
-                if (intent.resolveActivity(context.packageManager) != null) {
-                    context.startActivity(intent)
-                    return true
-                }
-                val fallbackUrl = intent.getStringExtra("browser_fallback_url")
-                if (!fallbackUrl.isNullOrEmpty()) {
-                    view.loadUrl(fallbackUrl)
-                    return true
-                }
-            } catch (_: Exception) {}
-            return true
+            return handleIntentScheme(view, uri.toString())
         }
 
         if (scheme != "http" && scheme != "https") {
-            try {
-                view.context.startActivity(Intent(Intent.ACTION_VIEW, url))
-            } catch (_: ActivityNotFoundException) {}
-            return true
+            return handleCustomScheme(view, uri)
         }
 
-        val host = url.host ?: return false
+        val host = uri.host ?: return false
         if (prefs.getBoolean("block_trackers", true)) {
             if (trackerHosts.any { host.contains(it) }) return true
         }
         DohManager.preResolveDns(host, prefs)
 
-        if (!request.isForMainFrame) return false
-        val context = view.context
-        val intent = Intent(Intent.ACTION_VIEW, url).apply {
-            addCategory(Intent.CATEGORY_BROWSABLE)
-        }
-        val pm = context.packageManager
-        val matches = pm.queryIntentActivities(intent, 0)
-        val nonBrowserMatch = matches.any { info ->
-            val pkg = info.activityInfo.packageName
-            pkg != context.packageName && !isBrowserPackage(pkg)
-        }
-        if (nonBrowserMatch) {
-            try {
-                val appIntent = Intent(Intent.ACTION_VIEW, url).apply {
-                    addCategory(Intent.CATEGORY_BROWSABLE)
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-                context.startActivity(appIntent)
-                return true
-            } catch (_: ActivityNotFoundException) {}
-        }
+        if (request.isForMainFrame && tryOpenInApp(view, uri)) return true
 
         return false
     }
 
-    private fun isBrowserPackage(pkg: String): Boolean {
-        return pkg.contains("browser") || pkg.contains("chrome") ||
-               pkg.contains("firefox") || pkg.contains("opera") ||
-               pkg.contains("samsung.android.app.internet") ||
-               pkg.contains("microsoft.bing") || pkg.contains("brave")
+    private fun handleIntentScheme(view: WebView, uriString: String): Boolean {
+        return try {
+            val intent = Intent.parseUri(uriString, Intent.URI_INTENT_SCHEME).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            val pm = view.context.packageManager
+            val resolveInfo = resolveActivityCompat(pm, intent)
+            val activity = view.context as? android.app.Activity
+
+            if (resolveInfo != null && activity != null) {
+                val appName = resolveInfo.loadLabel(pm).toString()
+                val appIcon = runCatching { resolveInfo.loadIcon(pm) }.getOrNull()
+                val sourceHost = view.url
+                    ?.let { runCatching { Uri.parse(it).host }.getOrNull() }
+                    ?:activity.getString(R.string.open_in_app_dialog_source_fallback)
+
+                activity.runOnUiThread {
+                    val builder = MaterialAlertDialogBuilder(
+                        activity, R.style.ThemeOverlay_ClintBrowser_Dialog
+                    )
+                        .setTitle(activity.getString(R.string.open_in_app_dialog_title))
+                        .setMessage(activity.getString(R.string.open_in_app_dialog_message, sourceHost, appName))
+                        .setCancelable(false)
+                        .setNegativeButton(activity.getString(R.string.open_in_app_dialog_stay_here)) { _, _ -> }
+                        .setPositiveButton(activity.getString(R.string.open_in_app_dialog_confirm)) { _, _ ->
+                            try { activity.startActivity(intent) } catch (_: ActivityNotFoundException) {}
+                        }
+                    if (appIcon != null) builder.setIcon(appIcon)
+                    builder.show()
+                }
+            } else {
+                val fallbackUrl = intent.getStringExtra("browser_fallback_url")
+                if (!fallbackUrl.isNullOrEmpty()) view.loadUrl(fallbackUrl)
+            }
+            true
+        } catch (_: Exception) {
+            true
+        }
+    }
+
+    private fun handleCustomScheme(view: WebView, uri: Uri): Boolean {
+        val context = view.context
+        val pm = context.packageManager
+        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        val resolveInfo = resolveActivityCompat(pm, intent)
+        val activity = context as? android.app.Activity
+
+        if (resolveInfo != null && activity != null) {
+            val appName = resolveInfo.loadLabel(pm).toString()
+            val appIcon = runCatching { resolveInfo.loadIcon(pm) }.getOrNull()
+            val sourceHost = view.url
+                ?.let { runCatching { Uri.parse(it).host }.getOrNull() }
+                ?: uri.scheme
+                ?:activity.getString(R.string.open_in_app_dialog_source_fallback)
+
+            activity.runOnUiThread {
+                val builder = MaterialAlertDialogBuilder(
+                    activity, R.style.ThemeOverlay_ClintBrowser_Dialog
+                )
+                    .setTitle(activity.getString(R.string.open_in_app_dialog_title))
+                    .setMessage(activity.getString(R.string.open_in_app_dialog_message, sourceHost, appName))
+                    .setCancelable(false)
+                    .setNegativeButton(activity.getString(R.string.open_in_app_dialog_stay_here)) { _, _ -> }
+                    .setPositiveButton(activity.getString(R.string.open_in_app_dialog_confirm)) { _, _ ->
+                        try { context.startActivity(intent) } catch (_: ActivityNotFoundException) {}
+                    }
+                if (appIcon != null) builder.setIcon(appIcon)
+                builder.show()
+            }
+            return true
+        }
+
+        return try {
+            context.startActivity(intent)
+            true
+        } catch (_: Exception) {
+            true
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun resolveActivityCompat(pm: PackageManager, intent: Intent): ResolveInfo? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            pm.resolveActivity(intent, PackageManager.ResolveInfoFlags.of(0))
+        } else {
+            pm.resolveActivity(intent, 0)
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun queryActivities(pm: PackageManager, intent: Intent): List<ResolveInfo> {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            pm.queryIntentActivities(intent, PackageManager.ResolveInfoFlags.of(0))
+        } else {
+            pm.queryIntentActivities(intent, 0)
+        }
+    }
+
+    fun resolveAppMatches(uri: Uri, context: android.content.Context): List<ResolveInfo> {
+        val pm = context.packageManager
+        val browserPackages = (
+            queryActivities(pm, Intent(Intent.ACTION_VIEW).apply {
+                addCategory(Intent.CATEGORY_BROWSABLE)
+                data = Uri.parse("http://example.com/")
+            }) +
+            queryActivities(pm, Intent(Intent.ACTION_VIEW).apply {
+                addCategory(Intent.CATEGORY_BROWSABLE)
+                data = Uri.parse("https://example.com/")
+            })
+        ).map { it.activityInfo.packageName }.toSet()
+
+        return queryActivities(pm, Intent(Intent.ACTION_VIEW, uri).apply {
+            addCategory(Intent.CATEGORY_BROWSABLE)
+            addCategory(Intent.CATEGORY_DEFAULT)
+        }).filter { ri ->
+            val pkg = ri.activityInfo.packageName
+            pkg != context.packageName && pkg !in browserPackages
+        }
+    }
+
+    fun tryOpenInApp(view: WebView, uri: Uri): Boolean {
+        val uriStr = uri.toString()
+        val host = uri.host ?: uriStr
+
+        if (isInCooldown(host)) return false
+
+        val context = view.context
+        val pm = context.packageManager
+
+        val browserPackages = (
+            queryActivities(pm, Intent(Intent.ACTION_VIEW).apply {
+                addCategory(Intent.CATEGORY_BROWSABLE)
+                data = Uri.parse("http://example.com/")
+            }) +
+            queryActivities(pm, Intent(Intent.ACTION_VIEW).apply {
+                addCategory(Intent.CATEGORY_BROWSABLE)
+                data = Uri.parse("https://example.com/")
+            })
+        ).map { it.activityInfo.packageName }.toSet()
+
+        val appMatches = queryActivities(pm, Intent(Intent.ACTION_VIEW, uri).apply {
+            addCategory(Intent.CATEGORY_BROWSABLE)
+            addCategory(Intent.CATEGORY_DEFAULT)
+        }).filter { ri ->
+            val pkg = ri.activityInfo.packageName
+            pkg != context.packageName && pkg !in browserPackages
+        }
+
+        if (appMatches.isEmpty()) return false
+
+        val activity = context as? android.app.Activity ?: return false
+
+        activity.runOnUiThread {
+            val dp = context.resources.displayMetrics.density
+
+            if (appMatches.size == 1) {
+                val match = appMatches[0]
+                val appName = match.loadLabel(pm).toString()
+                val appIcon = runCatching { match.loadIcon(pm) }.getOrNull()
+                val specificIntent = Intent(Intent.ACTION_VIEW, uri)
+                    .setPackage(match.activityInfo.packageName)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+                val builder = MaterialAlertDialogBuilder(
+                    activity, R.style.ThemeOverlay_ClintBrowser_Dialog
+                )
+                    .setTitle(activity.getString(R.string.open_in_app_dialog_title))
+                    .setMessage(activity.getString(R.string.open_in_app_dialog_message, host, appName))
+                    .setCancelable(false)
+                    .setNegativeButton(activity.getString(R.string.open_in_app_dialog_stay_here)) { _, _ ->
+                        startCooldown(host)
+                        view.loadUrl(uriStr)
+                    }
+                    .setPositiveButton(activity.getString(R.string.open_in_app_dialog_confirm)) { _, _ ->
+                        try { context.startActivity(specificIntent) } catch (_: ActivityNotFoundException) {}
+                    }
+                if (appIcon != null) builder.setIcon(appIcon)
+                builder.show()
+            } else {
+                val listLayout = android.widget.LinearLayout(context).apply {
+                    orientation = android.widget.LinearLayout.VERTICAL
+                    setPadding(0, (8 * dp).toInt(), 0, (8 * dp).toInt())
+                }
+
+                val dialog = MaterialAlertDialogBuilder(
+                    activity, R.style.ThemeOverlay_ClintBrowser_Dialog
+                )
+                    .setTitle(activity.getString(R.string.open_in_app_chooser_title))
+                    .setMessage(activity.getString(R.string.open_in_app_chooser_message, host))
+                    .setView(android.widget.ScrollView(context).apply { addView(listLayout) })
+                    .setCancelable(false)
+                    .setNegativeButton(activity.getString(R.string.open_in_app_dialog_stay_here)) { _, _ ->
+                        startCooldown(host)
+                        view.loadUrl(uriStr)
+                    }
+                    .show()
+
+                appMatches.forEach { ri ->
+                    val appName = ri.loadLabel(pm).toString()
+                    val appIcon = runCatching { ri.loadIcon(pm) }.getOrNull()
+                    val specificIntent = Intent(Intent.ACTION_VIEW, uri)
+                        .setPackage(ri.activityInfo.packageName)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+                    val row = android.widget.LinearLayout(context).apply {
+                        orientation = android.widget.LinearLayout.HORIZONTAL
+                        gravity = android.view.Gravity.CENTER_VERTICAL
+                        setPadding(
+                            (20 * dp).toInt(), (12 * dp).toInt(),
+                            (20 * dp).toInt(), (12 * dp).toInt()
+                        )
+                        background = android.util.TypedValue().let { tv ->
+                            context.theme.resolveAttribute(
+                                android.R.attr.selectableItemBackground, tv, true
+                            )
+                            androidx.core.content.ContextCompat.getDrawable(context, tv.resourceId)
+                        }
+                    }
+                    if (appIcon != null) {
+                        val iconSize = (32 * dp).toInt()
+                        row.addView(android.widget.ImageView(context).apply {
+                            setImageDrawable(appIcon)
+                            layoutParams = android.widget.LinearLayout.LayoutParams(iconSize, iconSize)
+                                .also { it.marginEnd = (16 * dp).toInt() }
+                        })
+                    }
+                    row.addView(android.widget.TextView(context).apply {
+                        text = appName
+                        setTextColor(0xFFFFFFFF.toInt())
+                        textSize = 15f
+                    })
+                    row.setOnClickListener {
+                        dialog.dismiss()
+                        try { context.startActivity(specificIntent) } catch (_: ActivityNotFoundException) {}
+                    }
+                    listLayout.addView(row)
+                }
+            }
+        }
+        return true
     }
 
     override fun shouldInterceptRequest(

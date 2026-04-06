@@ -594,6 +594,119 @@
             </LinearLayout>
         </ScrollView>
 
+        <!-- PAGE 3: Default Browser -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="28dp"
+                android:gravity="center_horizontal">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/setup_default_browser_title"
+                    android:textColor="@color/on_surface"
+                    android:textSize="26sp"
+                    android:fontFamily="sans-serif-medium" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="28dp"
+                    android:text="@string/setup_default_browser_description"
+                    android:textColor="@color/on_surface_medium"
+                    android:textSize="13sp"
+                    android:lineSpacingMultiplier="1.5" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    app:cardBackgroundColor="@color/toolbar_color"
+                    app:cardCornerRadius="14dp"
+                    app:strokeWidth="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="16dp"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:src="@drawable/ic_language_24"
+                            android:alpha="0.7" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginStart="14dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/setup_default_browser_card_title"
+                                android:textColor="@color/on_surface"
+                                android:textSize="15sp"
+                                android:fontFamily="sans-serif-medium" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="@string/setup_default_browser_card_desc"
+                                android:textColor="@color/on_surface_medium"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <ImageView
+                            android:id="@+id/ivDefaultBrowserCheck"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_marginStart="8dp"
+                            android:src="@drawable/ic_check_24"
+                            android:visibility="gone" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSetDefaultBrowser"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:text="@string/setup_default_browser_set_button"
+                    android:textSize="15sp"
+                    android:fontFamily="sans-serif-medium"
+                    app:backgroundTint="@color/purple_500"
+                    app:cornerRadius="26dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSkipDefaultBrowser"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="24dp"
+                    android:text="@string/setup_default_browser_skip"
+                    android:textSize="15sp"
+                    android:fontFamily="sans-serif-medium"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    app:cornerRadius="26dp" />
+
+            </LinearLayout>
+        </ScrollView>
+
     </ViewFlipper>
 
 </LinearLayout>

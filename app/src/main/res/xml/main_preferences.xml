@@ -7,46 +7,54 @@
         app:title="@string/general_settings"
         app:summary="@string/general_settings_summary"
         app:icon="@drawable/ic_settings_24"
-        app:fragment="com.jhaiian.clint.settings.GeneralSettingsFragment" />
+        app:fragment="com.jhaiian.clint.settings.GeneralSettingsFragment"
+        app:singleLineTitle="false" />
+
+    <Preference
+        app:key="pref_look_and_feel"
+        app:title="@string/look_and_feel"
+        app:summary="@string/look_and_feel_summary"
+        app:icon="@drawable/ic_palette_24"
+        app:fragment="com.jhaiian.clint.settings.LookAndFeelFragment"
+        app:singleLineTitle="false" />
 
     <Preference
         app:key="pref_privacy"
         app:title="@string/privacy_settings"
         app:summary="@string/privacy_settings_summary"
         app:icon="@drawable/ic_lock_24"
-        app:fragment="com.jhaiian.clint.settings.PrivacySettingsFragment" />
+        app:fragment="com.jhaiian.clint.settings.PrivacySettingsFragment"
+        app:singleLineTitle="false" />
 
     <Preference
         app:key="pref_doh"
         app:title="@string/doh_title"
         app:summary="@string/doh_settings_summary"
-        app:icon="@drawable/ic_shield_24"
-        app:fragment="com.jhaiian.clint.settings.DohSettingsFragment" />
-
-    <Preference
-        app:key="pref_search_engine"
-        app:title="@string/search_engine"
-        app:icon="@drawable/ic_search_24"
-        app:fragment="com.jhaiian.clint.settings.SearchEngineSettingsFragment" />
+        app:icon="@drawable/ic_dns_24"
+        app:fragment="com.jhaiian.clint.settings.DohSettingsFragment"
+        app:singleLineTitle="false" />
 
     <Preference
         app:key="pref_debug"
         app:title="@string/debug_title"
         app:summary="@string/debug_summary"
         app:icon="@drawable/ic_bug_24"
-        app:fragment="com.jhaiian.clint.crash.CrashReportFragment" />
+        app:fragment="com.jhaiian.clint.crash.CrashReportFragment"
+        app:singleLineTitle="false" />
 
     <Preference
         app:key="pref_updates"
-        app:title="Updates"
-        app:summary="Check for updates, manage channel"
+        app:title="@string/pref_updates_title"
+        app:summary="@string/pref_updates_summary"
         app:icon="@drawable/ic_update_24"
-        app:fragment="com.jhaiian.clint.settings.UpdateSettingsFragment" />
+        app:fragment="com.jhaiian.clint.settings.UpdateSettingsFragment"
+        app:singleLineTitle="false" />
 
     <Preference
         app:key="pref_about"
         app:title="@string/about"
         app:icon="@drawable/ic_info_24"
-        app:fragment="com.jhaiian.clint.settings.AboutFragment" />
+        app:fragment="com.jhaiian.clint.settings.AboutFragment"
+        app:singleLineTitle="false" />
 
 </PreferenceScreen>

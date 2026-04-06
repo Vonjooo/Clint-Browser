@@ -11,7 +11,7 @@ A privacy-focused Android browser built on Android WebView — no Google telemet
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blueviolet.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Android%208.0%2B-blueviolet.svg)](https://developer.android.com)
 [![Stable](https://img.shields.io/badge/Stable-1.0.0-blueviolet.svg)](https://github.com/jhaiian/Clint-Browser/releases/tag/v1.0.0)
-[![Beta](https://img.shields.io/badge/Beta-1.0.1--beta--1-9400d3.svg)](https://github.com/jhaiian/Clint-Browser/releases/tag/v1.0.1-beta-1)
+[![Beta](https://img.shields.io/badge/Beta-1.0.1--beta--2-9400d3.svg)](https://github.com/jhaiian/Clint-Browser/releases/tag/v1.0.1-beta-2)
 [![Open Source](https://img.shields.io/badge/Open%20Source-Yes-blueviolet.svg)](https://github.com/jhaiian/Clint-Browser)
 
 </div>
@@ -35,13 +35,15 @@ Built and maintained by **[@jhaiian](https://github.com/jhaiian)** — a solo de
     <td align="center"><img src="docs/screenshot1.jpg" width="180" alt="Welcome screen" /><br/><sub>Welcome</sub></td>
     <td align="center"><img src="docs/screenshot2.jpg" width="180" alt="Search engine setup" /><br/><sub>Search Engine Setup</sub></td>
     <td align="center"><img src="docs/screenshot3.jpg" width="180" alt="Secure DNS setup" /><br/><sub>Secure DNS</sub></td>
-    <td align="center"><img src="docs/screenshot4.jpg" width="180" alt="Browsing" /><br/><sub>Browsing</sub></td>
+    <td align="center"><img src="docs/screenshot4.jpg" width="180" alt="Default browser setup" /><br/><sub>Default Browser</sub></td>
+    <td align="center"><img src="docs/screenshot5.jpg" width="180" alt="Browsing" /><br/><sub>Browsing</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="docs/screenshot5.jpg" width="180" alt="Menu" /><br/><sub>Menu</sub></td>
-    <td align="center"><img src="docs/screenshot6.jpg" width="180" alt="Settings" /><br/><sub>Settings</sub></td>
-    <td align="center"><img src="docs/screenshot7.jpg" width="180" alt="Downloads" /><br/><sub>Downloads</sub></td>
-    <td align="center"><img src="docs/screenshot8.jpg" width="180" alt="Bookmarks" /><br/><sub>Bookmarks</sub></td>
+    <td align="center"><img src="docs/screenshot6.jpg" width="180" alt="Tab switcher" /><br/><sub>Tab Switcher</sub></td>
+    <td align="center"><img src="docs/screenshot7.jpg" width="180" alt="Menu" /><br/><sub>Menu</sub></td>
+    <td align="center"><img src="docs/screenshot8.jpg" width="180" alt="Settings" /><br/><sub>Settings</sub></td>
+    <td align="center"><img src="docs/screenshot9.jpg" width="180" alt="Downloads" /><br/><sub>Downloads</sub></td>
+    <td align="center"><img src="docs/screenshot10.jpg" width="180" alt="Bookmarks" /><br/><sub>Bookmarks</sub></td>
   </tr>
 </table>
 
@@ -56,11 +58,16 @@ Built and maintained by **[@jhaiian](https://github.com/jhaiian)** — a solo de
 - Incognito mode — no cookies, no cache, no history saved
 - Pull-to-refresh with smart nested scroll detection
 - Scroll-hide toolbar and navigation bar — bars slide away while scrolling and return on scroll up, configurable in Settings
-- Desktop Mode toggle
+- **Hide Status Bar** option for full-screen browsing (off by default)
+- Desktop Mode toggle with JavaScript injection for improved site compatibility
 - Address bar with select-all on focus
 - Back, forward, refresh, and home navigation
-- Intent support — links open installed apps (YouTube, Spotify, etc.)
+- Intent support — links open installed apps (YouTube, Spotify, etc.) with a prompt to choose between opening externally or staying in-app
+- **"Open in ___"** option in the menu (grayed out when no app is available)
 - Full-screen video and media support
+
+### 📎 Uploads
+- Upload support for images, videos, audio, and recordings directly from the browser
 
 ### 🔖 Bookmarks
 - Save any page with a single tap from the navigation bar
@@ -80,7 +87,7 @@ Built and maintained by **[@jhaiian](https://github.com/jhaiian)** — a solo de
 - DuckDuckGo (default)
 - Brave Search
 - Google *(with privacy warning)*
-- Changeable at any time from Settings
+- Changeable at any time from Settings → General
 
 ### ⬇️ Downloads
 - Custom download engine built on OkHttp — not the system DownloadManager
@@ -90,10 +97,16 @@ Built and maintained by **[@jhaiian](https://github.com/jhaiian)** — a solo de
 - Install downloaded APK files directly from the downloads screen
 - Automatic duplicate filename handling
 
+### 🎨 Look & Feel
+- Dedicated **Look & Feel** section in Settings for web appearance and display options
+- Scroll-hide bars and status bar visibility configurable independently
+
 ### 🔄 Updates
 - In-app update checker for **Stable** and **Beta** channels
+- Updates install directly in-app with a progress dialog
 - Architecture-aware APK download links
-- Optional check on launch
+- Optional check on launch, with an option to skip on metered/mobile data connections
+- **View Changelog** option in update settings
 
 ### 🐛 Debug & Crash Reports
 - Local crash log viewer — all data stays on your device, nothing is transmitted

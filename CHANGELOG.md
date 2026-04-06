@@ -4,6 +4,47 @@ All notable changes to Clint Browser are documented here.
 
 ---
 
+# v1.0.1-beta-2
+
+## ✨ Added
+- Upload support for image files, video, audio, and recordings.  
+- **“Hide Status Bar”** option in **Settings → General** (full screen browsing, off by default).  
+- **“Skip update check on launch when on mobile data or a metered connection”** option to reduce data usage.  
+- **“Open in ___”** option (grayed out if no app is available).  
+- **“View Changelog”** option in the update settings to view the full app changelog.  
+- New **“Look & Feel”** section in Settings.  
+- **WebView Dark Mode** support for easier night-time browsing.  
+- **Default Browser selection** added in **General settings** and **Setup activity**.  
+
+## 🔄 Changed / Improved
+- The updater now installs updates directly in-app with a progress dialog instead of opening the browser.  
+- All Markdown files now use **Markwon** for formatting.  
+- Markwon is now credited on the About page.  
+- Settings reorganization:
+  - Moved general appearance settings to **Look & Feel**.  
+  - Moved the search engine selector to **General**.  
+  - Removed the separate search engine settings screen.  
+- Terms of Service, Privacy Policy, and Policy viewer now open in a dialog instead of the browser.  
+- Crash log viewer now uses a dialog with the same style as ToS and Privacy Policy.  
+- Improved intent support:
+  - Fixed cases where supported apps were not detected.  
+  - Added prompt to choose between opening an external app or continuing in-app.  
+- Improved desktop mode by injecting JavaScript for better site compatibility.  
+- Reworked some strings in `strings.xml` for better readability.  
+- Updated the Privacy Policy to reflect new permissions and uploads.  
+- Updated `CONTRIBUTING.md` to reflect the new project structure.  
+- Updated **README.md** to reflect all new features and replace all screenshots.  
+
+## 🐛 Fixed
+- Page refresh issues on YouTube Shorts (SwipeRefreshLayout is now disabled on Shorts).  
+- Download list being deleted when the app is closed.  
+- Incorrect display in the download list when duplicate file numbers are added.  
+- Download toast not displaying the correct file number for duplicates.  
+- Some missing strings in `strings.xml`.  
+- Visible dot appearing on the right side of the webpage loading progress bar.
+
+---
+
 ## v1.0.1-beta-1
 
 ### New Features

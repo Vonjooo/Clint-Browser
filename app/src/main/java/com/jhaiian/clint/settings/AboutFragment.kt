@@ -43,20 +43,26 @@ class AboutFragment : Fragment() {
     private fun setupLinks() {
         makeClickable(binding.tvAuthorLink, "https://linktr.ee/jhaiian")
         makeClickable(binding.tvGithubLink, "https://github.com/jhaiian/Clint-Browser")
-        makeClickable(binding.tvPrivacyPolicyLink, "https://github.com/jhaiian/Clint-Browser/blob/main/PRIVACY_POLICY.md")
-        makeClickable(binding.tvTermsLink, "https://github.com/jhaiian/Clint-Browser/blob/main/TERMS_OF_SERVICE.md")
+        binding.tvPrivacyPolicyLink.setOnClickListener {
+            com.jhaiian.clint.ui.DocumentViewer.show(requireContext(), getString(R.string.document_viewer_privacy_policy_title), com.jhaiian.clint.ui.DocumentViewer.PRIVACY_POLICY_URL)
+        }
+        binding.tvTermsLink.setOnClickListener {
+            com.jhaiian.clint.ui.DocumentViewer.show(requireContext(), getString(R.string.document_viewer_terms_title), com.jhaiian.clint.ui.DocumentViewer.TERMS_URL)
+        }
         makeClickable(binding.tvDiscordLink, "https://discord.gg/4kUe4yPQ32")
         makeClickable(binding.tvKofiLink, "https://ko-fi.com/jhaiian")
         makeClickable(binding.tvLicenseLink, "https://www.gnu.org/licenses/gpl-3.0.html")
         makeClickable(binding.tvContactEmail, "mailto:jhaiianbetter@gmail.com")
         makeClickable(binding.tvContributorsLink, "https://github.com/jhaiian/Clint-Browser/blob/main/Contributors.md")
+        makeClickable(binding.tvMarkwonLink, "https://github.com/noties/Markwon")
+        makeClickable(binding.tvMarkwonLicenseLink, "https://www.apache.org/licenses/LICENSE-2.0.txt")
     }
 
     private fun makeClickable(view: TextView, url: String) {
         view.setOnClickListener {
             val intent = if (url.startsWith("mailto:")) {
                 Intent(Intent.ACTION_SENDTO, Uri.parse(url)).apply {
-                    putExtra(Intent.EXTRA_SUBJECT, "Clint Browser")
+                    putExtra(Intent.EXTRA_SUBJECT, getString(R.string.app_name))
                 }
             } else {
                 Intent(Intent.ACTION_VIEW, Uri.parse(url))

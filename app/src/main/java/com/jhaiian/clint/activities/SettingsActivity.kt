@@ -1,7 +1,7 @@
 package com.jhaiian.clint.activities
 
+import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.core.view.ViewCompat
@@ -10,8 +10,10 @@ import com.jhaiian.clint.R
 import com.jhaiian.clint.databinding.ActivitySettingsBinding
 import com.jhaiian.clint.settings.MainSettingsFragment
 
-class SettingsActivity : AppCompatActivity(),
+class SettingsActivity : ClintActivity(),
     PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
+
+    var pendingRestart = false
 
     private lateinit var binding: ActivitySettingsBinding
 
@@ -63,5 +65,19 @@ class SettingsActivity : AppCompatActivity(),
         }
         onBackPressedDispatcher.onBackPressed()
         return true
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (pendingRestart) {
+            pendingRestart = false
+            restartApp()
+        }
+    }
+
+    fun restartApp() {
+        val intent = packageManager.getLaunchIntentForPackage(packageName)!!
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
     }
 }

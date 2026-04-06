@@ -101,7 +101,8 @@
                 android:progress="0"
                 app:trackThickness="3dp"
                 app:indicatorColor="@color/purple_300"
-                app:trackColor="@color/toolbar_color" />
+                app:trackColor="@color/toolbar_color"
+                app:trackStopIndicatorSize="0dp" />
 
         </LinearLayout>
 

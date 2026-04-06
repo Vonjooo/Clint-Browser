@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -15,7 +14,7 @@ import com.jhaiian.clint.R
 import com.jhaiian.clint.bookmarks.BookmarkManager
 import com.jhaiian.clint.bookmarks.BookmarksAdapter
 
-class BookmarksActivity : AppCompatActivity() {
+class BookmarksActivity : ClintActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

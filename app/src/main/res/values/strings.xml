@@ -11,7 +11,7 @@
     <string name="settings">Settings</string>
     <string name="share_url">Share URL</string>
     <string name="open_in_browser">Open in external browser</string>
-    <string name="downloading">Downloading&#8230;</string>
+    <string name="downloading">Downloading\u2026</string>
     <string name="download_started">Download started</string>
     <string name="privacy_settings">Privacy &amp; Security</string>
     <string name="privacy_settings_summary">Trackers, cookies, JavaScript, User-Agent</string>
@@ -32,14 +32,11 @@
     <string name="engine_google">Google</string>
     <string name="engine_google_desc">Comprehensive results, data collection</string>
     <string name="default_label">Default</string>
-    <string name="next">Next →</string>
+    <string name="next">Next \u2192</string>
     <string name="get_started">Get Started</string>
-    <string name="setup_subtitle">Private browsing, your way.
-No telemetry. No tracking.</string>
+    <string name="setup_subtitle">Private browsing, your way.\nNo telemetry. No tracking.</string>
     <string name="google_warning_title">Privacy notice</string>
-    <string name="google_warning_message">Google will collect your search data and associate it with your account or IP address. Clint cannot prevent this.
-
-For better privacy, consider DuckDuckGo or Brave instead.</string>
+    <string name="google_warning_message">Google will collect your search data and associate it with your account or IP address. Clint cannot prevent this.\n\nFor better privacy, consider DuckDuckGo or Brave instead.</string>
     <string name="use_google_anyway">Use Google anyway</string>
     <string name="choose_another">Choose another</string>
     <string name="new_tab">New Tab</string>
@@ -58,18 +55,15 @@ For better privacy, consider DuckDuckGo or Brave instead.</string>
     <string name="about_section_repository">SOURCE CODE</string>
     <string name="about_section_donate">SUPPORT DEVELOPMENT</string>
     <string name="about_created_by">Created by</string>
-    <string name="about_description">Clint is a privacy-focused Android browser built on the Android WebView engine. It strips out Google telemetry and tracking, blocks ads and trackers at the network level, and puts control back in your hands.
-
-Clint is completely free and open source software, released under the GNU General Public License v3. You are free to use, study, modify, and distribute it.</string>
-    <string name="about_version_info">Version: %1$s (build %2$d)
-Device architecture: %3$s</string>
+    <string name="about_description">Clint is a privacy-focused Android browser built on the Android WebView engine. It strips out Google telemetry and tracking, blocks ads and trackers at the network level, and puts control back in your hands.\n\nClint is completely free and open source software, released under the GNU General Public License v3. You are free to use, study, modify, and distribute it.</string>
+    <string name="about_version_info">Version: %1$s (build %2$d)\nDevice architecture: %3$s</string>
     <string name="about_license_text">Clint is licensed under the GNU General Public License v3.0. This means you are free to view, modify, and redistribute the source code under the same license.</string>
-    <string name="about_license_link_label">View GPL v3.0 license ↗</string>
+    <string name="about_license_link_label">View GPL v3.0 license \u2197</string>
     <string name="about_opensource_text">The full source code is publicly available on GitHub. Contributions, bug reports, and feature requests are welcome.</string>
-    <string name="about_github_url">github.com/jhaiian/Clint-Browser ↗</string>
-    <string name="about_donate_text">"Clint is built and maintained in free time. If it's useful to you, consider supporting its development."</string>
-    <string name="about_kofi_url">ko-fi.com/jhaiian ↗</string>
-    <string name="about_paypal_email">jhaiianbetter@gmail.com ↗</string>
+    <string name="about_github_url">github.com/jhaiian/Clint-Browser \u2197</string>
+    <string name="about_donate_text">Clint is built and maintained in free time. If it\'s useful to you, consider supporting its development.</string>
+    <string name="about_kofi_url">ko-fi.com/jhaiian \u2197</string>
+    <string name="about_paypal_email">jhaiianbetter@gmail.com \u2197</string>
     <string name="doh_title">DNS over HTTPS</string>
     <string name="doh_settings_summary">Encrypt DNS lookups for privacy</string>
     <string name="doh_setup_title">Secure DNS</string>
@@ -81,15 +75,35 @@ Device architecture: %3$s</string>
     <string name="doh_mode_default">Default Protection</string>
     <string name="doh_mode_default_desc">Domains are pre-resolved via your provider. Falls back to system DNS automatically if the provider is unavailable.</string>
     <string name="doh_mode_increased">Increased Protection</string>
-    <string name="doh_mode_increased_desc">Uses your selected provider. Minimal fallback  -  only if the provider has a problem</string>
+    <string name="doh_mode_increased_desc">Uses your selected provider. Minimal fallback \u2014 only if the provider has a problem</string>
     <string name="doh_mode_max">Max Protection</string>
     <string name="doh_mode_max_desc">Domains are pre-resolved only via your provider. DNS lookups will fail if the provider is unreachable.</string>
     <string name="doh_provider_cloudflare">Cloudflare</string>
-    <string name="doh_provider_cloudflare_desc">1.1.1.1  -  Fast, privacy-first resolver by Cloudflare</string>
+    <string name="doh_provider_cloudflare_desc">1.1.1.1 \u2014 Fast, privacy-first resolver by Cloudflare</string>
     <string name="doh_provider_quad9">Quad9</string>
-    <string name="doh_provider_quad9_desc">9.9.9.9  -  Security-focused resolver with malware blocking</string>
+    <string name="doh_provider_quad9_desc">9.9.9.9 \u2014 Security-focused resolver with malware blocking</string>
     <string name="general_settings">General</string>
-    <string name="general_settings_summary">Scroll behavior and display options</string>
+    <string name="general_settings_summary">Search engine and browser defaults</string>
+    <string name="default_browser_title">Default Browser</string>
+    <string name="default_browser_none">None</string>
+    <string name="look_and_feel">Look &amp; Feel</string>
+    <string name="look_and_feel_summary">Scroll behavior and display options</string>
+    <string name="hide_status_bar">Hide status bar</string>
+    <string name="hide_status_bar_summary">Hide the system status bar for a more immersive browsing experience</string>
+    <string name="pref_updates_title">Updates</string>
+    <string name="pref_updates_summary">Check for updates, manage channel</string>
+    <string name="check_update_on_launch_title">Check for updates on launch</string>
+    <string name="check_update_on_launch_summary">Automatically check for a new version each time the app starts</string>
+    <string name="skip_update_on_metered_title">Skip update check on launch when on mobile data or metered connection</string>
+    <string name="skip_update_on_metered_summary">Don\u2019t check for updates on launch when using a metered or mobile data connection</string>
+    <string name="check_for_updates_title">Check for updates</string>
+    <string name="check_for_updates_summary">Check now for the latest stable or beta release</string>
+    <string name="view_changelog_title">View Changelog</string>
+    <string name="view_changelog_summary">See what\u2019s new in each release</string>
+    <string name="beta_channel_title">Enrol in Beta</string>
+    <string name="beta_channel_summary">Receive early access builds before they reach stable. May contain bugs.</string>
+    <string name="force_dark_web_title">Dark mode for websites</string>
+    <string name="force_dark_web_summary">Apply dark mode to all websites. Uses system API on Android 10+, CSS filter on older devices.</string>
     <string name="hide_bars_on_scroll">Hide bars when scrolling</string>
     <string name="hide_bars_on_scroll_summary">Toolbar and navigation bar slide away when scrolling down, and return when scrolling up</string>
     <string name="debug_title">Debug &amp; Crash Reports</string>
@@ -104,9 +118,15 @@ Device architecture: %3$s</string>
     <string name="crash_copy">Copy crash report</string>
     <string name="crash_delete">Delete report</string>
     <string name="crash_report_title">FILE A BUG REPORT</string>
-    <string name="crash_report_instructions">Help improve Clint by reporting bugs on GitHub. No data is sent automatically — you choose what to share.</string>
+    <string name="crash_report_instructions">Help improve Clint by reporting bugs on GitHub. No data is sent automatically \u2014 you choose what to share.</string>
     <string name="crash_steps_title">How to file a report</string>
-    <string name="crash_steps">1. Reproduce the crash or bug\n2. Return here and tap the crash entry to expand it\n3. Tap the copy icon to copy the crash log\n4. Tap \"Open GitHub Issues\" below\n5. Click \"New issue\" on GitHub\n6. Copy the template below, paste it, and attach your crash log\n7. Fill in the steps that caused the crash and submit</string>
+    <string name="crash_step_reproduce">Reproduce the crash or bug</string>
+    <string name="crash_step_expand">Open the crash entry to expand it</string>
+    <string name="crash_step_copy">Copy the crash log</string>
+    <string name="crash_step_open_github">Tap \u201cOpen GitHub Issues\u201d</string>
+    <string name="crash_step_new_issue">Create a new issue</string>
+    <string name="crash_step_attach">Attach your crash log</string>
+    <string name="crash_step_submit">Submit the report</string>
     <string name="crash_template_title">Issue Template</string>
     <string name="crash_copy_template">Copy template</string>
     <string name="crash_template_copied">Template copied to clipboard</string>
@@ -115,6 +135,81 @@ Device architecture: %3$s</string>
     <string name="about_contact_email">jhaiianbetter@gmail.com</string>
     <string name="about_section_contributors">CONTRIBUTORS</string>
     <string name="about_contributors_text">View the full list of people who contributed to Clint.</string>
-    <string name="about_contributors_link">Contributors.md ↗</string>
-    <string name="about_linktree_url">jhaiian ↗</string>
+    <string name="about_contributors_link">Contributors.md \u2197</string>
+    <string name="about_section_libraries">OPEN SOURCE LIBRARIES</string>
+    <string name="about_library_markwon_label">Markwon by Noties</string>
+    <string name="about_library_markwon_license">Apache License 2.0 \u2197</string>
+    <string name="about_linktree_url">jhaiian \u2197</string>
+    <string name="open_in_app_dialog_title">Open in app?</string>
+    <string name="open_in_app_dialog_message">%1$s wants to open %2$s.</string>
+    <string name="open_in_app_dialog_stay_here">Stay here</string>
+    <string name="open_in_app_dialog_confirm">Open</string>
+    <string name="open_in_app_dialog_source_fallback">This page</string>
+    <string name="open_in_app_chooser_title">Open with</string>
+    <string name="open_in_app_chooser_message">Choose an app to open %1$s.</string>
+    <string name="menu_open_in_app">Open in app</string>
+    <string name="menu_open_in_named_app">Open in %1$s</string>
+
+    <string name="action_ok">OK</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_later">Later</string>
+    <string name="action_not_now">Not now</string>
+    <string name="action_allow">Allow</string>
+    <string name="action_open">Open</string>
+    <string name="action_open_settings">Open Settings</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_copy">Copy</string>
+
+    <string name="camera_permission_title">Camera access</string>
+    <string name="camera_permission_message">Camera access is needed so you can take photos or record videos to upload directly from this page.</string>
+
+    <string name="toast_downloading">Downloading %1$s</string>
+
+    <string name="install_apk_dialog_title">Install APK</string>
+    <string name="install_apk_dialog_message">Do you want to install \"%1$s\"?\n\nOnly install APKs from sources you trust.</string>
+    <string name="install_apk_dialog_confirm">Install</string>
+    <string name="install_apk_permission_title">Permission required</string>
+    <string name="install_apk_permission_message">To install APK files, Clint needs permission to install unknown apps. You\'ll be taken to Settings to enable it.</string>
+
+    <string name="restart_required_title">Restart required</string>
+    <string name="restart_required_message">The app needs to restart for this change to take effect.</string>
+    <string name="restart_required_confirm">Restart now</string>
+
+    <string name="beta_enrol_title">Enrol in Beta</string>
+    <string name="beta_enrol_message">Beta releases give you early access to new features before they reach the stable channel.\n\nBeta builds may contain bugs, incomplete features, or unexpected behaviour. They are not recommended for daily use on your primary device.\n\nYou can switch back to stable at any time.</string>
+    <string name="beta_enrol_confirm">Enrol</string>
+
+    <string name="update_dialog_title">v%1$s%2$s available</string>
+    <string name="update_dialog_skip">Skip this version</string>
+    <string name="update_dialog_download">Download</string>
+    <string name="update_dialog_view_github">View on GitHub</string>
+    <string name="update_download_dialog_title">Downloading Update</string>
+    <string name="update_download_preparing">Preparing\u2026</string>
+    <string name="update_download_in_progress">Downloading update\u2026</string>
+    <string name="update_up_to_date_title">You\'re up to date</string>
+    <string name="update_up_to_date_message">Clint Browser is running the latest version.</string>
+    <string name="update_check_failed_title">Update check failed</string>
+    <string name="update_check_failed_message">Could not reach the update server. Please check your connection and try again.</string>
+
+    <string name="download_status_progress">%1$d%%  \u2022  %2$s</string>
+    <string name="download_status_complete">Complete  \u2022  %1$s</string>
+    <string name="download_status_failed">Failed: %1$s</string>
+    <string name="download_error_unknown">Unknown error</string>
+    <string name="download_status_cancelled">Cancelled</string>
+    <string name="download_notification_channel_name">Clint Downloads</string>
+    <string name="download_notification_channel_desc">File download progress</string>
+    <string name="download_notification_complete">Download complete</string>
+    <string name="download_notification_failed">Download failed</string>
+
+    <string name="setup_default_browser_title">Default Browser</string>
+    <string name="setup_default_browser_description">Make Clint your default browser so links from other apps open here automatically. This is completely optional \u2014 you can change it at any time in your device settings.</string>
+    <string name="setup_default_browser_card_title">Set as Default Browser</string>
+    <string name="setup_default_browser_card_desc">Tap the button below to set Clint as your default browser</string>
+    <string name="setup_default_browser_set_button">Set as Default Browser</string>
+    <string name="setup_default_browser_skip">Skip</string>
+
+    <string name="document_viewer_error">Couldn\u2019t load document.\nPlease check your connection and try again.</string>
+    <string name="document_viewer_privacy_policy_title">Privacy Policy</string>
+    <string name="document_viewer_terms_title">Terms of Service</string>
+    <string name="document_viewer_changelog_title">Changelog</string>
 </resources>

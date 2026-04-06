@@ -57,6 +57,7 @@ ClintBrowser/
 ├── app/src/main/java/com/jhaiian/clint/
 │   ├── activities/
 │   │   ├── MainActivity.kt           # Browser UI, scroll-hide bars, tab management
+│   │   ├── ClintActivity.kt          # Base activity
 │   │   ├── BookmarksActivity.kt      # Bookmarks screen
 │   │   ├── DownloadsActivity.kt      # Downloads screen
 │   │   ├── SettingsActivity.kt       # Settings host activity
@@ -77,9 +78,9 @@ ClintBrowser/
 │   ├── settings/
 │   │   ├── MainSettingsFragment.kt   # Settings root screen
 │   │   ├── GeneralSettingsFragment.kt# General settings (scroll-hide, display)
+│   │   ├── LookAndFeelFragment.kt    # Appearance & theme settings
 │   │   ├── PrivacySettingsFragment.kt# Privacy & security settings
 │   │   ├── DohSettingsFragment.kt    # DNS over HTTPS settings
-│   │   ├── SearchEngineSettingsFragment.kt
 │   │   ├── UpdateSettingsFragment.kt # Update channel settings
 │   │   └── AboutFragment.kt          # About screen
 │   ├── tabs/
@@ -88,6 +89,8 @@ ClintBrowser/
 │   │   ├── TabAdapter.kt             # Tab switcher adapter
 │   │   ├── TabPreview.kt             # Tab thumbnail model
 │   │   └── TabSwitcherSheet.kt       # Bottom sheet tab switcher
+│   ├── ui/
+│   │   └── DocumentViewer.kt         # In-app document viewer
 │   ├── update/
 │   │   └── UpdateChecker.kt          # In-app update checker
 │   └── webview/
@@ -103,13 +106,19 @@ ClintBrowser/
 │   ├── screenshot1.jpg               # Welcome screen
 │   ├── screenshot2.jpg               # Search engine setup
 │   ├── screenshot3.jpg               # Secure DNS setup
-│   ├── screenshot4.jpg               # Browsing
-│   ├── screenshot5.jpg               # Menu
-│   ├── screenshot6.jpg               # Settings
-│   ├── screenshot7.jpg               # Downloads
-│   └── screenshot8.jpg               # Bookmarks
+│   ├── screenshot4.jpg               # Default browser setup
+│   ├── screenshot5.jpg               # Browsing
+│   ├── screenshot6.jpg               # Tab switcher
+│   ├── screenshot7.jpg               # Menu
+│   ├── screenshot8.jpg               # Settings
+│   ├── screenshot9.jpg               # Downloads
+│   └── screenshot10.jpg              # Bookmarks
 ├── CHANGELOG.md
+├── Contributing.md
+├── Contributors.md
+├── LICENSE
 ├── PRIVACY_POLICY.md
+├── README.md
 └── TERMS_OF_SERVICE.md
 ```
 

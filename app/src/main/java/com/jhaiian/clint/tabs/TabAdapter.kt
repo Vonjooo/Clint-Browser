@@ -31,7 +31,7 @@ class TabAdapter(
 
     override fun onBindViewHolder(holder: TabViewHolder, position: Int) {
         val tab = tabs[position]
-        holder.title.text = tab.title.ifBlank { "New Tab" }
+        holder.title.text = tab.title.ifBlank { holder.itemView.context.getString(R.string.new_tab) }
         holder.url.text = tab.url.removePrefix("https://").removePrefix("http://").ifBlank { "" }
         holder.icon.setImageResource(
             if (tab.isIncognito) R.drawable.ic_incognito_24 else R.drawable.ic_globe_24

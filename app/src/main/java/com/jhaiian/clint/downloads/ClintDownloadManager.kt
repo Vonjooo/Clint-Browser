@@ -9,8 +9,14 @@ import android.os.Environment
 import android.webkit.MimeTypeMap
 import androidx.core.app.NotificationCompat
 import androidx.core.content.FileProvider
+import com.jhaiian.clint.R
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import android.os.Handler
+import android.os.Looper
+import android.widget.Toast
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.Executors
@@ -24,7 +30,7 @@ object ClintDownloadManager {
     data class DownloadItem(
         val id: Int,
         val url: String,
-        val filename: String,
+        var filename: String,
         val userAgent: String,
         var bytesDownloaded: Long = 0L,
         var totalBytes: Long = -1L,
@@ -37,9 +43,13 @@ object ClintDownloadManager {
     }
 
     private val CHANNEL_ID = "clint_downloads"
+    private val PREFS_NAME = "clint_downloads_prefs"
+    private val KEY_DOWNLOADS = "saved_downloads"
     private val executor = Executors.newFixedThreadPool(4)
     private val idCounter = AtomicInteger(1)
     private val futures = mutableMapOf<Int, Future<*>>()
+    private var appContext: Context? = null
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     val downloads = mutableListOf<DownloadItem>()
     var onDownloadsChanged: (() -> Unit)? = null
@@ -47,14 +57,74 @@ object ClintDownloadManager {
     fun createNotificationChannel(context: Context) {
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Clint Downloads",
+            context.getString(R.string.download_notification_channel_name),
             NotificationManager.IMPORTANCE_LOW
         ).apply {
-            description = "File download progress"
+            description = context.getString(R.string.download_notification_channel_desc)
             setSound(null, null)
         }
         context.getSystemService(NotificationManager::class.java)
             .createNotificationChannel(channel)
+    }
+
+    fun init(context: Context) {
+        appContext = context.applicationContext
+        loadDownloads()
+    }
+
+    private fun loadDownloads() {
+        val ctx = appContext ?: return
+        val json = ctx.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getString(KEY_DOWNLOADS, null) ?: return
+        try {
+            val arr = JSONArray(json)
+            val loaded = mutableListOf<DownloadItem>()
+            for (i in 0 until arr.length()) {
+                val obj = arr.getJSONObject(i)
+                val status = DownloadStatus.valueOf(obj.getString("status"))
+                val item = DownloadItem(
+                    id = obj.getInt("id"),
+                    url = obj.getString("url"),
+                    filename = obj.getString("filename"),
+                    userAgent = obj.getString("userAgent"),
+                    bytesDownloaded = obj.getLong("bytesDownloaded"),
+                    totalBytes = obj.getLong("totalBytes"),
+                    status = status,
+                    errorMessage = obj.optString("errorMessage").takeIf { it.isNotEmpty() }
+                )
+                val path = obj.optString("filePath")
+                if (path.isNotEmpty()) item.file = File(path)
+                loaded.add(item)
+            }
+            synchronized(downloads) { downloads.addAll(loaded) }
+            loaded.maxOfOrNull { it.id }?.let { max ->
+                if (max >= idCounter.get()) idCounter.set(max + 1)
+            }
+        } catch (_: Exception) {}
+    }
+
+    private fun saveDownloads() {
+        val ctx = appContext ?: return
+        val arr = JSONArray()
+        synchronized(downloads) {
+            downloads.forEach { item ->
+                if (item.status == DownloadStatus.DOWNLOADING) return@forEach
+                val obj = JSONObject().apply {
+                    put("id", item.id)
+                    put("url", item.url)
+                    put("filename", item.filename)
+                    put("userAgent", item.userAgent)
+                    put("bytesDownloaded", item.bytesDownloaded)
+                    put("totalBytes", item.totalBytes)
+                    put("status", item.status.name)
+                    item.errorMessage?.let { put("errorMessage", it) }
+                    item.file?.let { put("filePath", it.absolutePath) }
+                }
+                arr.put(obj)
+            }
+        }
+        ctx.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit().putString(KEY_DOWNLOADS, arr.toString()).apply()
     }
 
     fun enqueue(context: Context, url: String, filename: String, userAgent: String) {
@@ -77,6 +147,7 @@ object ClintDownloadManager {
             downloads.find { it.id == id }?.let { it.status = DownloadStatus.CANCELLED }
         }
         context.getSystemService(NotificationManager::class.java).cancel(id)
+        saveDownloads()
         onDownloadsChanged?.invoke()
     }
 
@@ -84,6 +155,7 @@ object ClintDownloadManager {
         synchronized(downloads) {
             downloads.removeAll { it.status != DownloadStatus.DOWNLOADING }
         }
+        saveDownloads()
         onDownloadsChanged?.invoke()
     }
 
@@ -107,7 +179,13 @@ object ClintDownloadManager {
             val destDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
             destDir.mkdirs()
             val destFile = uniqueFile(destDir, item.filename)
+            item.filename = destFile.name  // reflect the actual name (e.g. "file(1).pdf")
             item.file = destFile
+            val ctx = appContext
+            if (ctx != null) {
+                val msg = ctx.getString(R.string.toast_downloading, item.filename)
+                mainHandler.post { Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show() }
+            }
 
             val buffer = ByteArray(8192)
             var lastNotifyBytes = 0L
@@ -118,6 +196,7 @@ object ClintDownloadManager {
                             destFile.delete()
                             item.status = DownloadStatus.CANCELLED
                             context.getSystemService(NotificationManager::class.java).cancel(item.id)
+                            saveDownloads()
                             onDownloadsChanged?.invoke()
                             return
                         }
@@ -135,6 +214,7 @@ object ClintDownloadManager {
             }
 
             item.status = DownloadStatus.COMPLETE
+            saveDownloads()
             onDownloadsChanged?.invoke()
             showCompleteNotification(context, item)
         } catch (e: Exception) {
@@ -147,6 +227,7 @@ object ClintDownloadManager {
     private fun fail(context: Context, item: DownloadItem, msg: String) {
         item.status = DownloadStatus.FAILED
         item.errorMessage = msg
+        saveDownloads()
         onDownloadsChanged?.invoke()
         showFailedNotification(context, item)
     }
@@ -157,7 +238,7 @@ object ClintDownloadManager {
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.stat_sys_download)
             .setContentTitle(item.filename)
-            .setContentText(if (progress >= 0) "$progress%" else "Downloading…")
+            .setContentText(if (progress >= 0) "$progress%" else context.getString(R.string.downloading))
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setSilent(true)
@@ -171,7 +252,7 @@ object ClintDownloadManager {
             context, item.id, cancelIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        builder.addAction(0, "Cancel", cancelPi)
+        builder.addAction(0, context.getString(R.string.action_cancel), cancelPi)
         nm.notify(item.id, builder.build())
     }
 
@@ -201,12 +282,12 @@ object ClintDownloadManager {
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.stat_sys_download_done)
             .setContentTitle(item.filename)
-            .setContentText("Download complete")
+            .setContentText(context.getString(R.string.download_notification_complete))
             .setAutoCancel(true)
             .setOngoing(false)
         if (openPi != null) {
             builder.setContentIntent(openPi)
-            builder.addAction(0, "Open", openPi)
+            builder.addAction(0, context.getString(R.string.action_open), openPi)
         }
         nm.notify(item.id, builder.build())
     }
@@ -216,7 +297,7 @@ object ClintDownloadManager {
         NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.stat_notify_error)
             .setContentTitle(item.filename)
-            .setContentText("Download failed")
+            .setContentText(context.getString(R.string.download_notification_failed))
             .setAutoCancel(true)
             .build()
             .let { nm.notify(item.id, it) }

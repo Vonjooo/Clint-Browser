@@ -61,30 +61,5 @@
 
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/crashExpandArea"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#1AFFFFFF" />
-
-            <TextView
-                android:id="@+id/crashContent"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:textColor="@color/on_surface_medium"
-                android:textSize="11sp"
-                android:fontFamily="monospace"
-                android:textIsSelectable="true"
-                android:visibility="visible" />
-
-        </LinearLayout>
-
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

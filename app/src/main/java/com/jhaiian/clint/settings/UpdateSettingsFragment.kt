@@ -7,12 +7,23 @@ import androidx.preference.PreferenceManager
 import androidx.preference.SwitchPreferenceCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.jhaiian.clint.R
+import com.jhaiian.clint.ui.DocumentViewer
 import com.jhaiian.clint.update.UpdateChecker
 
 class UpdateSettingsFragment : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.update_preferences, rootKey)
+
+        val checkOnLaunch = findPreference<SwitchPreferenceCompat>("check_update_on_launch")
+        val skipOnMetered = findPreference<SwitchPreferenceCompat>("skip_update_on_metered")
+
+        skipOnMetered?.isEnabled = checkOnLaunch?.isChecked == true
+
+        checkOnLaunch?.setOnPreferenceChangeListener { _, newValue ->
+            skipOnMetered?.isEnabled = newValue as Boolean
+            true
+        }
 
         findPreference<Preference>("check_for_updates")?.setOnPreferenceClickListener {
             val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
@@ -21,20 +32,24 @@ class UpdateSettingsFragment : PreferenceFragmentCompat() {
             true
         }
 
+        findPreference<Preference>("view_changelog")?.setOnPreferenceClickListener {
+            DocumentViewer.show(
+                requireContext(),
+                getString(R.string.document_viewer_changelog_title),
+                DocumentViewer.CHANGELOG_URL
+            )
+            true
+        }
+
         findPreference<SwitchPreferenceCompat>("beta_channel")?.setOnPreferenceChangeListener { _, newValue ->
             if (newValue as Boolean) {
                 MaterialAlertDialogBuilder(requireContext(), R.style.ThemeOverlay_ClintBrowser_Dialog)
-                    .setTitle("Enrol in Beta")
-                    .setMessage(
-                        "Beta releases give you early access to new features before they reach the stable channel.\n\n" +
-                        "Beta builds may contain bugs, incomplete features, or unexpected behaviour. " +
-                        "They are not recommended for daily use on your primary device.\n\n" +
-                        "You can switch back to stable at any time."
-                    )
-                    .setNegativeButton("Cancel") { _, _ ->
+                    .setTitle(getString(R.string.beta_enrol_title))
+                    .setMessage(getString(R.string.beta_enrol_message))
+                    .setNegativeButton(getString(R.string.action_cancel)) { _, _ ->
                         findPreference<SwitchPreferenceCompat>("beta_channel")?.isChecked = false
                     }
-                    .setPositiveButton("Enrol") { _, _ ->
+                    .setPositiveButton(getString(R.string.beta_enrol_confirm)) { _, _ ->
                         findPreference<SwitchPreferenceCompat>("beta_channel")?.isChecked = true
                     }
                     .show()

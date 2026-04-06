@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <SwitchPreferenceCompat
+        app:key="force_dark_web"
+        app:title="@string/force_dark_web_title"
+        app:summary="@string/force_dark_web_summary"
+        app:defaultValue="true"
+        app:icon="@drawable/ic_palette_24"
+        app:singleLineTitle="false" />
+
+    <SwitchPreferenceCompat
+        app:key="hide_bars_on_scroll"
+        app:title="@string/hide_bars_on_scroll"
+        app:summary="@string/hide_bars_on_scroll_summary"
+        app:defaultValue="true"
+        app:icon="@drawable/ic_globe_24"
+        app:singleLineTitle="false" />
+
+    <SwitchPreferenceCompat
+        app:key="hide_status_bar"
+        app:title="@string/hide_status_bar"
+        app:summary="@string/hide_status_bar_summary"
+        app:defaultValue="false"
+        app:icon="@drawable/ic_phone_android_24"
+        app:singleLineTitle="false" />
+
+</PreferenceScreen>

@@ -1,6 +1,6 @@
 # Privacy Policy for Clint Browser
 
-*Last updated: March 2026*
+*Last updated: April 6 2026*
 
 ## Overview
 
@@ -35,8 +35,13 @@ Clint Browser requests the following permissions:
 - **Write External Storage** (Android 9 and below) — required to save downloaded files
 - **Post Notifications** (Android 13 and above) — used to show download progress notifications
 - **Request Install Packages** — used in two cases: to install app updates downloaded through the browser's built-in update checker, and to allow you to install APK files you have manually downloaded through the browser. In both cases, installation only happens when you explicitly confirm it. This permission is never used to install software without your knowledge or consent.
+- **Camera** — used to allow you to take photos or record video when uploading content through the browser. Camera access is only activated when you initiate an upload that requires it. Clint Browser never accesses your camera in the background or without your direct action.
 
 No permission is used for data collection or tracking purposes.
+
+## Uploads
+
+Any files, photos, or recordings you upload through the browser are sent directly to the website you are uploading to. Clint Browser never receives, stores, or has any access to that content. The website or service you upload to is solely responsible for how it handles your data.
 
 ## Third-Party Services
 
