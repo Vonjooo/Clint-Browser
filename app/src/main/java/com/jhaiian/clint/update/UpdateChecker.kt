@@ -39,14 +39,9 @@ object UpdateChecker {
     fun check(activity: Activity, isBeta: Boolean, silent: Boolean) {
         executor.submit {
             try {
-                // Always fetch the stable manifest. When enrolled in beta, also fetch
-                // the beta manifest and pick whichever channel has the higher versionCode.
                 val stableJson = fetchJson(STABLE_URL)
                 val betaJson   = if (isBeta) fetchJson(BETA_URL) else null
 
-                // Choose the manifest with the highest versionCode. If both are available,
-                // prefer beta only when its versionCode strictly exceeds stable's, so that
-                // a promoted stable release is always surfaced to beta users.
                 val (json, isSelectedBeta) = when {
                     betaJson == null -> Pair(stableJson, false)
                     betaJson.getLong("versionCode") > stableJson.getLong("versionCode") ->
@@ -337,13 +332,18 @@ object UpdateChecker {
     private fun extractLatestChangelog(raw: String): String {
         val lines = raw.split("\n")
         val result = mutableListOf<String>()
-        var inSection = false
+        var sectionPrefix: String? = null
         for (line in lines) {
-            if (line.trimStart().startsWith("## ")) {
-                if (inSection) break
-                inSection = true
-                result.add(line)
-            } else if (inSection) {
+            val trimmed = line.trimStart()
+            if (sectionPrefix == null) {
+                sectionPrefix = when {
+                    trimmed.startsWith("## ") -> "## "
+                    trimmed.startsWith("# ")  -> "# "
+                    else -> null
+                }
+                if (sectionPrefix != null) result.add(line)
+            } else {
+                if (trimmed.startsWith(sectionPrefix)) break
                 result.add(line)
             }
         }
