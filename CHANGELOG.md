@@ -4,7 +4,7 @@ All notable changes to Clint Browser are documented here.
 
 ---
 
-# v1.0.1 – Stable Release
+# v1.0.1
 
 ## ✨ New Features
 
