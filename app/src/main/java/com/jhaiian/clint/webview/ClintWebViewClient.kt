@@ -16,12 +16,15 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.jhaiian.clint.R
-import com.jhaiian.clint.activities.MainActivity
+import com.jhaiian.clint.activities.ClintActivity
 import com.jhaiian.clint.network.DohManager
 
 class ClintWebViewClient(
     private val prefs: SharedPreferences,
-    private val isActive: () -> Boolean = { true }
+    private val isActive: () -> Boolean = { true },
+    private val onPageStartedCallback: (String) -> Unit = {},
+    private val onPageFinishedCallback: (String) -> Unit = {},
+    private val onTabUrlUpdatedCallback: (WebView, String) -> Unit = { _, _ -> }
 ) : WebViewClient() {
 
     private val cooldownDomains = mutableMapOf<String, Long>()
@@ -63,18 +66,18 @@ class ClintWebViewClient(
         Uri.parse(url).host?.let { host ->
             DohManager.preResolveDns(host, prefs)
         }
-        if (isActive()) (view.context as? MainActivity)?.onPageStarted(url)
+        if (isActive()) onPageStartedCallback(url)
     }
 
     override fun onPageFinished(view: WebView, url: String) {
         super.onPageFinished(view, url)
-        (view.context as? MainActivity)?.onTabUrlUpdated(view, url)
-        if (isActive()) (view.context as? MainActivity)?.onPageFinished(url)
+        onTabUrlUpdatedCallback(view, url)
+        if (isActive()) onPageFinishedCallback(url)
     }
 
     override fun doUpdateVisitedHistory(view: WebView, url: String, isReload: Boolean) {
         super.doUpdateVisitedHistory(view, url, isReload)
-        (view.context as? MainActivity)?.onTabUrlUpdated(view, url)
+        onTabUrlUpdatedCallback(view, url)
     }
 
     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
@@ -118,7 +121,7 @@ class ClintWebViewClient(
 
                 activity.runOnUiThread {
                     val builder = MaterialAlertDialogBuilder(
-                        activity, R.style.ThemeOverlay_ClintBrowser_Dialog
+                        activity, (activity as? ClintActivity)?.getDialogTheme() ?: R.style.ThemeOverlay_ClintBrowser_Dialog
                     )
                         .setTitle(activity.getString(R.string.open_in_app_dialog_title))
                         .setMessage(activity.getString(R.string.open_in_app_dialog_message, sourceHost, appName))
@@ -159,7 +162,7 @@ class ClintWebViewClient(
 
             activity.runOnUiThread {
                 val builder = MaterialAlertDialogBuilder(
-                    activity, R.style.ThemeOverlay_ClintBrowser_Dialog
+                    activity, (activity as? ClintActivity)?.getDialogTheme() ?: R.style.ThemeOverlay_ClintBrowser_Dialog
                 )
                     .setTitle(activity.getString(R.string.open_in_app_dialog_title))
                     .setMessage(activity.getString(R.string.open_in_app_dialog_message, sourceHost, appName))
@@ -266,7 +269,7 @@ class ClintWebViewClient(
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
                 val builder = MaterialAlertDialogBuilder(
-                    activity, R.style.ThemeOverlay_ClintBrowser_Dialog
+                    activity, (activity as? ClintActivity)?.getDialogTheme() ?: R.style.ThemeOverlay_ClintBrowser_Dialog
                 )
                     .setTitle(activity.getString(R.string.open_in_app_dialog_title))
                     .setMessage(activity.getString(R.string.open_in_app_dialog_message, host, appName))
@@ -287,7 +290,7 @@ class ClintWebViewClient(
                 }
 
                 val dialog = MaterialAlertDialogBuilder(
-                    activity, R.style.ThemeOverlay_ClintBrowser_Dialog
+                    activity, (activity as? ClintActivity)?.getDialogTheme() ?: R.style.ThemeOverlay_ClintBrowser_Dialog
                 )
                     .setTitle(activity.getString(R.string.open_in_app_chooser_title))
                     .setMessage(activity.getString(R.string.open_in_app_chooser_message, host))

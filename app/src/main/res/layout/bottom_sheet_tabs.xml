@@ -4,13 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/surface_dark">
+    android:background="?attr/clintPopupBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="@color/surface_dark"
+        android:background="?attr/clintPopupBackground"
         android:elevation="4dp">
 
         <View
@@ -19,7 +19,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="12dp"
             android:layout_marginBottom="4dp"
-            android:background="#44FFFFFF" />
+            android:background="?attr/clintDividerColor" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -37,7 +37,7 @@
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:text="@string/no_tabs"
-                android:textColor="@color/on_surface"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp"
                 android:fontFamily="sans-serif-medium" />
 
@@ -58,8 +58,10 @@
                 android:layout_weight="1"
                 android:layout_marginEnd="6dp"
                 android:text="@string/new_tab"
+                android:textColor="?attr/clintButtonTextColor"
                 android:textSize="13sp"
-                app:backgroundTint="@color/purple_700"
+                app:backgroundTint="?attr/clintButtonBackground"
+                app:iconTint="?attr/clintButtonIconTint"
                 app:cornerRadius="22dp"
                 app:icon="@drawable/ic_add_24"
                 app:iconSize="18dp"
@@ -84,7 +86,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#22FFFFFF" />
+            android:background="?attr/clintDividerColor" />
 
     </LinearLayout>
 

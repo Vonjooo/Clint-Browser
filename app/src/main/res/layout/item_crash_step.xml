@@ -9,7 +9,7 @@
         android:id="@+id/tvStepNumber"
         android:layout_width="20dp"
         android:layout_height="wrap_content"
-        android:textColor="@color/purple_200"
+        android:textColor="?attr/colorPrimary"
         android:textSize="13sp"
         android:fontFamily="sans-serif-medium" />
 
@@ -18,7 +18,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:textColor="@color/on_surface_medium"
+        android:textColor="?attr/clintSecondaryTextColor"
         android:textSize="13sp"
         android:lineSpacingMultiplier="1.4" />
 

@@ -6,10 +6,9 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Environment
-import android.webkit.MimeTypeMap
 import androidx.core.app.NotificationCompat
-import androidx.core.content.FileProvider
 import com.jhaiian.clint.R
+import com.jhaiian.clint.activities.DownloadsActivity
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import android.os.Handler
@@ -258,26 +257,29 @@ object ClintDownloadManager {
 
     private fun showCompleteNotification(context: Context, item: DownloadItem) {
         val nm = context.getSystemService(NotificationManager::class.java)
-        val file = item.file ?: run { nm.cancel(item.id); return }
-        val uri = try {
-            FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-        } catch (_: Exception) { null }
-
-        val openIntent = if (uri != null) {
-            val ext = file.extension.lowercase()
-            val mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext) ?: "*/*"
-            Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(uri, mime)
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-        } else null
-
-        val openPi = openIntent?.let {
-            PendingIntent.getActivity(
-                context, item.id + 10000, it,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
+        if (item.file == null) {
+            nm.cancel(item.id)
+            return
         }
+
+        nm.cancel(item.id)
+
+        val openIntent = Intent(context, DownloadsActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            putExtra(DownloadsActivity.EXTRA_OPEN_ID, item.id)
+        }
+        val openPi = PendingIntent.getActivity(
+            context, item.id + 10000, openIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val downloadsIntent = Intent(context, DownloadsActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        }
+        val downloadsPi = PendingIntent.getActivity(
+            context, item.id + 20000, downloadsIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.stat_sys_download_done)
@@ -285,20 +287,26 @@ object ClintDownloadManager {
             .setContentText(context.getString(R.string.download_notification_complete))
             .setAutoCancel(true)
             .setOngoing(false)
-        if (openPi != null) {
-            builder.setContentIntent(openPi)
-            builder.addAction(0, context.getString(R.string.action_open), openPi)
-        }
+            .setContentIntent(downloadsPi)
+            .addAction(0, context.getString(R.string.action_open), openPi)
         nm.notify(item.id, builder.build())
     }
 
     private fun showFailedNotification(context: Context, item: DownloadItem) {
         val nm = context.getSystemService(NotificationManager::class.java)
+        val downloadsIntent = Intent(context, DownloadsActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        }
+        val downloadsPi = PendingIntent.getActivity(
+            context, item.id + 30000, downloadsIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
         NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.stat_notify_error)
             .setContentTitle(item.filename)
             .setContentText(context.getString(R.string.download_notification_failed))
             .setAutoCancel(true)
+            .setContentIntent(downloadsPi)
             .build()
             .let { nm.notify(item.id, it) }
     }

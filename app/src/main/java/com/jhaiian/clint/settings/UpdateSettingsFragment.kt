@@ -43,7 +43,8 @@ class UpdateSettingsFragment : PreferenceFragmentCompat() {
 
         findPreference<SwitchPreferenceCompat>("beta_channel")?.setOnPreferenceChangeListener { _, newValue ->
             if (newValue as Boolean) {
-                MaterialAlertDialogBuilder(requireContext(), R.style.ThemeOverlay_ClintBrowser_Dialog)
+                val activity = requireActivity() as com.jhaiian.clint.activities.ClintActivity
+                MaterialAlertDialogBuilder(requireContext(), activity.getDialogTheme())
                     .setTitle(getString(R.string.beta_enrol_title))
                     .setMessage(getString(R.string.beta_enrol_message))
                     .setNegativeButton(getString(R.string.action_cancel)) { _, _ ->

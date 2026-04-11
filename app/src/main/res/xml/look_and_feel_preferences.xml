@@ -2,6 +2,13 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <Preference
+        app:key="app_theme"
+        app:title="@string/pref_app_theme_title"
+        app:summary="@string/pref_app_theme_summary"
+        app:icon="@drawable/ic_palette_24"
+        app:singleLineTitle="false" />
+
     <SwitchPreferenceCompat
         app:key="force_dark_web"
         app:title="@string/force_dark_web_title"

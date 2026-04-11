@@ -151,12 +151,11 @@ jobs:
           with open("CHANGELOG.md", "r", encoding="utf-8") as fh:
               changelog_raw = fh.read()
 
-          pattern = r"(## " + re.escape(tag) + r"(?!-)[ \t]*\n)(.*?)(?=\n## |\Z)"
+          pattern = r"(#{1,6} [^\n]*?" + re.escape(tag) + r"(?!-)[^\n]*\n)(.*?)(?=\n---|\n# |\Z)"
           match = re.search(pattern, changelog_raw, re.DOTALL)
           if match:
-              heading = match.group(1).rstrip("\n")
               body = match.group(2).strip()
-              changelog_text = heading + "\n\n" + body if body else heading
+              changelog_text = body if body else f"## {tag}"
           else:
               changelog_text = f"## {tag}"
 

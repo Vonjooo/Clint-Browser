@@ -23,6 +23,10 @@ import com.jhaiian.clint.downloads.DownloadsAdapter
 
 class DownloadsActivity : ClintActivity() {
 
+    companion object {
+        const val EXTRA_OPEN_ID = "open_download_id"
+    }
+
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var adapter: DownloadsAdapter
     private lateinit var recycler: RecyclerView
@@ -71,11 +75,27 @@ class DownloadsActivity : ClintActivity() {
 
         ClintDownloadManager.onDownloadsChanged = { handler.post { refresh() } }
         refresh()
+        handleOpenIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleOpenIntent(intent)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         ClintDownloadManager.onDownloadsChanged = null
+    }
+
+    private fun handleOpenIntent(intent: Intent?) {
+        val id = intent?.getIntExtra(EXTRA_OPEN_ID, -1) ?: return
+        if (id == -1) return
+        val item = synchronized(ClintDownloadManager.downloads) {
+            ClintDownloadManager.downloads.find { it.id == id }
+        } ?: return
+        handleOpen(item)
     }
 
     private fun handleOpen(item: DownloadItem) {

@@ -9,11 +9,12 @@ import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import com.jhaiian.clint.activities.MainActivity
 
 class ClintWebChromeClient(
     private val isActive: () -> Boolean = { true },
     private val onTitleChanged: (String) -> Unit = {},
+    private val onProgressChanged: (Int) -> Unit = {},
+    private val onUrlChanged: (String) -> Unit = {},
     private val onFullscreenShow: (View, CustomViewCallback) -> Unit = { _, _ -> },
     private val onFullscreenHide: () -> Unit = {},
     private val onFileChooser: (ValueCallback<Array<Uri>>, FileChooserParams) -> Boolean = { _, _ -> false },
@@ -22,13 +23,13 @@ class ClintWebChromeClient(
 
     override fun onProgressChanged(view: WebView, newProgress: Int) {
         super.onProgressChanged(view, newProgress)
-        if (isActive()) (view.context as? MainActivity)?.onProgressChanged(newProgress)
+        if (isActive()) onProgressChanged(newProgress)
     }
 
     override fun onReceivedTitle(view: WebView, title: String) {
         super.onReceivedTitle(view, title)
         onTitleChanged(title)
-        if (isActive()) (view.context as? MainActivity)?.updateAddressBar(view.url ?: "")
+        if (isActive()) onUrlChanged(view.url ?: "")
     }
 
     override fun onShowCustomView(view: View, callback: CustomViewCallback) {

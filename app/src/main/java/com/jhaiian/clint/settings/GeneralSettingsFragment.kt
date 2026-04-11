@@ -15,6 +15,7 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.jhaiian.clint.R
+import com.jhaiian.clint.activities.ClintActivity
 
 class GeneralSettingsFragment : PreferenceFragmentCompat() {
 
@@ -110,7 +111,7 @@ class GeneralSettingsFragment : PreferenceFragmentCompat() {
             selectEngine(key)
         }
 
-        MaterialAlertDialogBuilder(requireContext(), R.style.ThemeOverlay_ClintBrowser_Dialog)
+        MaterialAlertDialogBuilder(requireContext(), (requireActivity() as ClintActivity).getDialogTheme())
             .setTitle(getString(R.string.choose_search_engine))
             .setView(dialogView)
             .setNegativeButton(android.R.string.cancel, null)
@@ -131,7 +132,7 @@ class GeneralSettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun showGoogleWarning(onConfirm: () -> Unit) {
-        MaterialAlertDialogBuilder(requireContext(), R.style.ThemeOverlay_ClintBrowser_Dialog)
+        MaterialAlertDialogBuilder(requireContext(), (requireActivity() as ClintActivity).getDialogTheme())
             .setTitle(getString(R.string.google_warning_title))
             .setMessage(getString(R.string.google_warning_message))
             .setNegativeButton(getString(R.string.choose_another), null)

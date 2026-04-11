@@ -11,7 +11,6 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.ScrollView
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.jhaiian.clint.R
@@ -35,6 +34,22 @@ object UpdateChecker {
 
     private val executor = Executors.newSingleThreadExecutor()
     private val client = OkHttpClient()
+
+    private fun getDialogTheme(context: Context): Int {
+        val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
+        return when (prefs.getString("app_theme", "default") ?: "default") {
+            "dark" -> R.style.ThemeOverlay_ClintBrowser_Dialog_Dark
+            "light" -> R.style.ThemeOverlay_ClintBrowser_Dialog_Light
+            else -> R.style.ThemeOverlay_ClintBrowser_Dialog
+        }
+    }
+
+    private fun resolveColor(context: Context, dialogTheme: Int, attr: Int): Int {
+        val wrapped = android.view.ContextThemeWrapper(context, dialogTheme)
+        val tv = android.util.TypedValue()
+        wrapped.theme.resolveAttribute(attr, tv, true)
+        return tv.data
+    }
 
     fun check(activity: Activity, isBeta: Boolean, silent: Boolean) {
         executor.submit {
@@ -110,20 +125,29 @@ object UpdateChecker {
         isBeta: Boolean
     ) {
         val channelLabel = if (isBeta) " (Beta)" else ""
-        val changelog = extractLatestChangelog(rawChangelog)
+        val changelog = rawChangelog.trim()
         val markwon = Markwon.create(activity)
+        val dialogTheme = getDialogTheme(activity)
 
         val dp = activity.resources.displayMetrics.density
 
+        val colorOnSurface = resolveColor(activity, dialogTheme, com.google.android.material.R.attr.colorOnSurface)
+        val colorOnSurfaceMedium = run {
+            val alpha = ((colorOnSurface ushr 24) * 0.6).toInt()
+            (colorOnSurface and 0x00FFFFFF) or (alpha shl 24)
+        }
+        val colorPrimary = resolveColor(activity, dialogTheme, com.google.android.material.R.attr.colorPrimary)
+        val dividerColor = resolveColor(activity, dialogTheme, R.attr.clintDividerColor)
+
         val changelogTv = TextView(activity).apply {
             setPadding(64, 24, 64, 8)
-            setTextColor(0xCCFFFFFF.toInt())
+            setTextColor(colorOnSurface)
             textSize = 13f
         }
         markwon.setMarkdown(changelogTv, changelog)
 
         val divider = android.view.View(activity).apply {
-            setBackgroundColor(0x1FFFFFFF)
+            setBackgroundColor(dividerColor)
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, 1
             ).also { it.topMargin = (8 * dp).toInt() }
@@ -143,9 +167,8 @@ object UpdateChecker {
             }
         }
 
-        val btnSkip = makeBtn(activity.getString(R.string.update_dialog_skip), 0x99FFFFFF.toInt())
-        val btnLater = makeBtn(activity.getString(R.string.action_later), 0xFFBA68C8.toInt())
-        val primaryColor = 0xFFBA68C8.toInt()
+        val btnSkip = makeBtn(activity.getString(R.string.update_dialog_skip), colorOnSurfaceMedium)
+        val btnLater = makeBtn(activity.getString(R.string.action_later), colorPrimary)
 
         val buttonRow = LinearLayout(activity).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -169,7 +192,7 @@ object UpdateChecker {
             addView(buttonRow)
         }
 
-        val dialog = MaterialAlertDialogBuilder(activity, R.style.ThemeOverlay_ClintBrowser_Dialog)
+        val dialog = MaterialAlertDialogBuilder(activity, dialogTheme)
             .setTitle(activity.getString(R.string.update_dialog_title, version, channelLabel))
             .setView(container)
             .setCancelable(false)
@@ -185,7 +208,7 @@ object UpdateChecker {
         val btnAction = makeBtn(
             if (!downloadUrl.isNullOrEmpty()) activity.getString(R.string.update_dialog_download)
             else activity.getString(R.string.update_dialog_view_github),
-            primaryColor
+            colorPrimary
         )
         buttonRow.addView(btnAction)
         btnAction.setOnClickListener {
@@ -218,9 +241,17 @@ object UpdateChecker {
 
         apkFile.delete()
 
+        val dialogTheme = getDialogTheme(activity)
+        val colorOnSurface = resolveColor(activity, dialogTheme, com.google.android.material.R.attr.colorOnSurface)
+        val colorOnSurfaceMedium = run {
+            val alpha = ((colorOnSurface ushr 24) * 0.6).toInt()
+            (colorOnSurface and 0x00FFFFFF) or (alpha shl 24)
+        }
+        val colorPrimary = resolveColor(activity, dialogTheme, com.google.android.material.R.attr.colorPrimary)
+
         val statusText = TextView(activity).apply {
             text = activity.getString(R.string.update_download_preparing)
-            setTextColor(0xFFFFFFFF.toInt())
+            setTextColor(colorOnSurface)
             textSize = 14f
         }
 
@@ -228,7 +259,7 @@ object UpdateChecker {
             max = 100
             progress = 0
             isIndeterminate = false
-            progressTintList = ColorStateList.valueOf(0xFFBA68C8.toInt())
+            progressTintList = ColorStateList.valueOf(colorPrimary)
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
@@ -237,7 +268,7 @@ object UpdateChecker {
 
         val percentText = TextView(activity).apply {
             text = "0%"
-            setTextColor(0x99FFFFFF.toInt())
+            setTextColor(colorOnSurfaceMedium)
             textSize = 12f
             gravity = Gravity.END
         }
@@ -253,7 +284,7 @@ object UpdateChecker {
         val request = Request.Builder().url(downloadUrl).build()
         val call = client.newCall(request)
 
-        val dialog = MaterialAlertDialogBuilder(activity, R.style.ThemeOverlay_ClintBrowser_Dialog)
+        val dialog = MaterialAlertDialogBuilder(activity, dialogTheme)
             .setTitle(activity.getString(R.string.update_download_dialog_title))
             .setView(layout)
             .setCancelable(false)
@@ -314,7 +345,8 @@ object UpdateChecker {
     }
 
     private fun showNoUpdateDialog(activity: Activity) {
-        MaterialAlertDialogBuilder(activity, R.style.ThemeOverlay_ClintBrowser_Dialog)
+        val dialogTheme = getDialogTheme(activity)
+        MaterialAlertDialogBuilder(activity, dialogTheme)
             .setTitle(activity.getString(R.string.update_up_to_date_title))
             .setMessage(activity.getString(R.string.update_up_to_date_message))
             .setPositiveButton(activity.getString(R.string.action_ok), null)
@@ -322,7 +354,8 @@ object UpdateChecker {
     }
 
     private fun showErrorDialog(activity: Activity) {
-        MaterialAlertDialogBuilder(activity, R.style.ThemeOverlay_ClintBrowser_Dialog)
+        val dialogTheme = getDialogTheme(activity)
+        MaterialAlertDialogBuilder(activity, dialogTheme)
             .setTitle(activity.getString(R.string.update_check_failed_title))
             .setMessage(activity.getString(R.string.update_check_failed_message))
             .setPositiveButton(activity.getString(R.string.action_ok), null)

@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="14dp"
             android:text="@string/new_tab"
-            android:textColor="#F0FFFFFF"
+            android:textColor="?attr/clintPopupTextColor"
             android:textSize="14sp" />
 
     </LinearLayout>
@@ -54,7 +54,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="14dp"
             android:text="@string/new_incognito_tab"
-            android:textColor="#F0FFFFFF"
+            android:textColor="?attr/clintPopupTextColor"
             android:textSize="14sp" />
 
     </LinearLayout>
@@ -80,7 +80,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="14dp"
             android:text="@string/share_url"
-            android:textColor="#F0FFFFFF"
+            android:textColor="?attr/clintPopupTextColor"
             android:textSize="14sp" />
 
     </LinearLayout>
@@ -107,7 +107,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="14dp"
             android:text="Open in app"
-            android:textColor="#F0FFFFFF"
+            android:textColor="?attr/clintPopupTextColor"
             android:textSize="14sp" />
 
     </LinearLayout>
@@ -141,8 +141,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="14dp"
-            android:text="Downloads"
-            android:textColor="#F0FFFFFF"
+            android:text="@string/menu_downloads"
+            android:textColor="?attr/clintPopupTextColor"
             android:textSize="14sp" />
 
     </LinearLayout>
@@ -167,8 +167,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="14dp"
-            android:text="Bookmarks"
-            android:textColor="#F0FFFFFF"
+            android:text="@string/menu_bookmarks"
+            android:textColor="?attr/clintPopupTextColor"
             android:textSize="14sp" />
 
     </LinearLayout>
@@ -204,7 +204,7 @@
             android:layout_weight="1"
             android:layout_marginStart="14dp"
             android:text="@string/desktop_mode"
-            android:textColor="#F0FFFFFF"
+            android:textColor="?attr/clintPopupTextColor"
             android:textSize="14sp" />
 
         <ImageView
@@ -213,7 +213,7 @@
             android:layout_height="18dp"
             android:src="@drawable/ic_check_24"
             android:alpha="0"
-            android:tint="#BA68C8" />
+            android:tint="?attr/clintPopupCheckColor" />
 
     </LinearLayout>
 
@@ -247,7 +247,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="14dp"
             android:text="@string/settings"
-            android:textColor="#F0FFFFFF"
+            android:textColor="?attr/clintPopupTextColor"
             android:textSize="14sp" />
 
     </LinearLayout>

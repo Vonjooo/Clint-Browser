@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/surface_dark"
+    android:background="?android:attr/colorBackground"
     android:fillViewport="true">
 
     <LinearLayout
@@ -37,7 +37,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/app_name"
-                    android:textColor="@color/on_surface"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="22sp"
                     android:fontFamily="sans-serif-medium" />
 
@@ -46,7 +46,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:text="@string/about_acronym"
-                    android:textColor="@color/purple_200"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="11sp"
                     android:fontFamily="sans-serif-medium"
                     android:letterSpacing="0.05" />
@@ -59,7 +59,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:cardBackgroundColor="@color/toolbar_color"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="14dp"
             app:strokeWidth="0dp">
 
@@ -73,7 +73,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/about_section_about"
-                    android:textColor="@color/purple_200"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="11sp"
                     android:fontFamily="sans-serif-medium"
                     android:letterSpacing="0.1"
@@ -83,14 +83,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/about_description"
-                    android:textColor="@color/on_surface"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="14sp"
                     android:lineSpacingMultiplier="1.5" />
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="#1AFFFFFF"
+                    android:background="?attr/clintSurfaceVariant"
                     android:layout_marginTop="14dp"
                     android:layout_marginBottom="14dp" />
 
@@ -105,7 +105,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/about_created_by"
-                        android:textColor="@color/on_surface_medium"
+                        android:textColor="?attr/clintSecondaryTextColor"
                         android:textSize="13sp" />
 
                     <TextView
@@ -113,7 +113,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/about_linktree_url"
-                        android:textColor="@color/purple_300"
+                        android:textColor="?attr/colorPrimary"
                         android:textSize="13sp"
                         android:fontFamily="sans-serif-medium"
                         android:background="?attr/selectableItemBackground"
@@ -128,7 +128,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:cardBackgroundColor="@color/toolbar_color"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="14dp"
             app:strokeWidth="0dp">
 
@@ -142,7 +142,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/about_section_version"
-                    android:textColor="@color/purple_200"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="11sp"
                     android:fontFamily="sans-serif-medium"
                     android:letterSpacing="0.1"
@@ -152,7 +152,7 @@
                     android:id="@+id/tvVersionInfo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/on_surface"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="13sp"
                     android:lineSpacingMultiplier="1.6"
                     android:fontFamily="monospace" />
@@ -164,7 +164,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:cardBackgroundColor="@color/toolbar_color"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="14dp"
             app:strokeWidth="0dp">
 
@@ -178,7 +178,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/about_section_license"
-                    android:textColor="@color/purple_200"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="11sp"
                     android:fontFamily="sans-serif-medium"
                     android:letterSpacing="0.1"
@@ -188,7 +188,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/about_license_text"
-                    android:textColor="@color/on_surface"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="13sp"
                     android:lineSpacingMultiplier="1.5"
                     android:layout_marginBottom="10dp" />
@@ -198,7 +198,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/about_license_link_label"
-                    android:textColor="@color/purple_300"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="13sp"
                     android:fontFamily="sans-serif-medium"
                     android:background="?attr/selectableItemBackground"
@@ -211,7 +211,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:cardBackgroundColor="@color/toolbar_color"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="14dp"
             app:strokeWidth="0dp">
 
@@ -225,7 +225,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/about_section_repository"
-                    android:textColor="@color/purple_200"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="11sp"
                     android:fontFamily="sans-serif-medium"
                     android:letterSpacing="0.1"
@@ -235,7 +235,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/about_opensource_text"
-                    android:textColor="@color/on_surface"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="13sp"
                     android:lineSpacingMultiplier="1.5"
                     android:layout_marginBottom="10dp" />
@@ -245,7 +245,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/about_github_url"
-                    android:textColor="@color/purple_300"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="13sp"
                     android:fontFamily="sans-serif-medium"
                     android:background="?attr/selectableItemBackground"
@@ -258,7 +258,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:cardBackgroundColor="@color/toolbar_color"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="14dp"
             app:strokeWidth="0dp">
 
@@ -272,7 +272,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="LEGAL"
-                    android:textColor="@color/purple_200"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="11sp"
                     android:fontFamily="sans-serif-medium"
                     android:letterSpacing="0.1"
@@ -290,7 +290,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Privacy Policy"
-                        android:textColor="@color/on_surface_medium"
+                        android:textColor="?attr/clintSecondaryTextColor"
                         android:textSize="13sp" />
 
                     <TextView
@@ -298,7 +298,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="View"
-                        android:textColor="@color/purple_300"
+                        android:textColor="?attr/colorPrimary"
                         android:textSize="13sp"
                         android:fontFamily="sans-serif-medium"
                         android:background="?attr/selectableItemBackground"
@@ -309,7 +309,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="#1AFFFFFF" />
+                    android:background="?attr/clintSurfaceVariant" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -323,7 +323,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Terms of Service"
-                        android:textColor="@color/on_surface_medium"
+                        android:textColor="?attr/clintSecondaryTextColor"
                         android:textSize="13sp" />
 
                     <TextView
@@ -331,7 +331,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="View"
-                        android:textColor="@color/purple_300"
+                        android:textColor="?attr/colorPrimary"
                         android:textSize="13sp"
                         android:fontFamily="sans-serif-medium"
                         android:background="?attr/selectableItemBackground"
@@ -346,7 +346,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:cardBackgroundColor="@color/toolbar_color"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="14dp"
             app:strokeWidth="0dp">
 
@@ -360,7 +360,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="COMMUNITY"
-                    android:textColor="@color/purple_200"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="11sp"
                     android:fontFamily="sans-serif-medium"
                     android:letterSpacing="0.1"
@@ -370,7 +370,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Join the official Clint Browser community on Discord to share feedback, report bugs, and connect with other users."
-                    android:textColor="@color/on_surface"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="13sp"
                     android:lineSpacingMultiplier="1.5"
                     android:layout_marginBottom="10dp" />
@@ -386,7 +386,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Discord"
-                        android:textColor="@color/on_surface_medium"
+                        android:textColor="?attr/clintSecondaryTextColor"
                         android:textSize="13sp" />
 
                     <TextView
@@ -394,7 +394,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="discord.gg/4kUe4yPQ32"
-                        android:textColor="@color/purple_300"
+                        android:textColor="?attr/colorPrimary"
                         android:textSize="13sp"
                         android:fontFamily="sans-serif-medium"
                         android:background="?attr/selectableItemBackground"
@@ -409,7 +409,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
-            app:cardBackgroundColor="@color/toolbar_color"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="14dp"
             app:strokeWidth="0dp">
 
@@ -423,7 +423,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/about_section_donate"
-                    android:textColor="@color/purple_200"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="11sp"
                     android:fontFamily="sans-serif-medium"
                     android:letterSpacing="0.1"
@@ -433,7 +433,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/about_donate_text"
-                    android:textColor="@color/on_surface_medium"
+                    android:textColor="?attr/clintSecondaryTextColor"
                     android:textSize="13sp"
                     android:lineSpacingMultiplier="1.5"
                     android:layout_marginBottom="10dp" />
@@ -449,7 +449,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Ko-fi"
-                        android:textColor="@color/on_surface_medium"
+                        android:textColor="?attr/clintSecondaryTextColor"
                         android:textSize="13sp" />
 
                     <TextView
@@ -457,7 +457,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/about_kofi_url"
-                        android:textColor="@color/purple_300"
+                        android:textColor="?attr/colorPrimary"
                         android:textSize="13sp"
                         android:fontFamily="sans-serif-medium"
                         android:background="?attr/selectableItemBackground"
@@ -473,7 +473,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:cardBackgroundColor="@color/toolbar_color"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="14dp"
             app:strokeWidth="0dp">
 
@@ -487,7 +487,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/about_section_contact"
-                    android:textColor="@color/purple_200"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="11sp"
                     android:fontFamily="sans-serif-medium"
                     android:letterSpacing="0.1"
@@ -504,7 +504,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Email"
-                        android:textColor="@color/on_surface_medium"
+                        android:textColor="?attr/clintSecondaryTextColor"
                         android:textSize="13sp" />
 
                     <TextView
@@ -512,7 +512,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/about_contact_email"
-                        android:textColor="@color/purple_300"
+                        android:textColor="?attr/colorPrimary"
                         android:textSize="13sp"
                         android:fontFamily="sans-serif-medium"
                         android:background="?attr/selectableItemBackground"
@@ -527,7 +527,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
-            app:cardBackgroundColor="@color/toolbar_color"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="14dp"
             app:strokeWidth="0dp">
 
@@ -541,7 +541,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/about_section_contributors"
-                    android:textColor="@color/purple_200"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="11sp"
                     android:fontFamily="sans-serif-medium"
                     android:letterSpacing="0.1"
@@ -551,7 +551,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/about_contributors_text"
-                    android:textColor="@color/on_surface"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="13sp"
                     android:lineSpacingMultiplier="1.5"
                     android:layout_marginBottom="10dp" />
@@ -561,7 +561,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/about_contributors_link"
-                    android:textColor="@color/purple_300"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="13sp"
                     android:fontFamily="sans-serif-medium"
                     android:background="?attr/selectableItemBackground"
@@ -574,7 +574,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
-            app:cardBackgroundColor="@color/toolbar_color"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="14dp"
             app:strokeWidth="0dp">
 
@@ -588,7 +588,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/about_section_libraries"
-                    android:textColor="@color/purple_200"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="11sp"
                     android:fontFamily="sans-serif-medium"
                     android:letterSpacing="0.1"
@@ -606,7 +606,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/about_library_markwon_label"
-                        android:textColor="@color/purple_300"
+                        android:textColor="?attr/colorPrimary"
                         android:textSize="13sp"
                         android:fontFamily="sans-serif-medium"
                         android:background="?attr/selectableItemBackground"
@@ -617,7 +617,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/about_library_markwon_license"
-                        android:textColor="@color/on_surface_medium"
+                        android:textColor="?attr/clintSecondaryTextColor"
                         android:textSize="13sp"
                         android:background="?attr/selectableItemBackground"
                         android:padding="4dp" />

@@ -17,7 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/engine_duckduckgo"
-            android:textColor="@color/on_surface"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="16sp"
             android:paddingStart="20dp"
             android:paddingEnd="24dp"
@@ -25,7 +25,7 @@
             android:paddingBottom="10dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:buttonTint="@color/purple_300"
+            android:buttonTint="?attr/colorPrimary"
             android:background="?attr/selectableItemBackground" />
 
         <RadioButton
@@ -33,7 +33,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/engine_brave"
-            android:textColor="@color/on_surface"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="16sp"
             android:paddingStart="20dp"
             android:paddingEnd="24dp"
@@ -41,7 +41,7 @@
             android:paddingBottom="10dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:buttonTint="@color/purple_300"
+            android:buttonTint="?attr/colorPrimary"
             android:background="?attr/selectableItemBackground" />
 
         <RadioButton
@@ -49,7 +49,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/engine_google"
-            android:textColor="@color/on_surface"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="16sp"
             android:paddingStart="20dp"
             android:paddingEnd="24dp"
@@ -57,7 +57,7 @@
             android:paddingBottom="10dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:buttonTint="@color/purple_300"
+            android:buttonTint="?attr/colorPrimary"
             android:background="?attr/selectableItemBackground" />
 
     </RadioGroup>

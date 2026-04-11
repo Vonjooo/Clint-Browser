@@ -88,6 +88,14 @@
     <string name="default_browser_none">None</string>
     <string name="look_and_feel">Look &amp; Feel</string>
     <string name="look_and_feel_summary">Scroll behavior and display options</string>
+    <string name="pref_app_theme_title">App Theme</string>
+    <string name="pref_app_theme_summary">Choose the app&#8217;s visual theme</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_light_desc">Clean white background with dark accents</string>
+    <string name="theme_default">Default</string>
+    <string name="theme_default_desc">Deep purple, signature Clint style</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_dark_desc">Dark background with white accents</string>
     <string name="hide_status_bar">Hide status bar</string>
     <string name="hide_status_bar_summary">Hide the system status bar for a more immersive browsing experience</string>
     <string name="pref_updates_title">Updates</string>
@@ -149,6 +157,8 @@
     <string name="open_in_app_chooser_message">Choose an app to open %1$s.</string>
     <string name="menu_open_in_app">Open in app</string>
     <string name="menu_open_in_named_app">Open in %1$s</string>
+    <string name="menu_downloads">Downloads</string>
+    <string name="menu_bookmarks">Bookmarks</string>
 
     <string name="action_ok">OK</string>
     <string name="action_cancel">Cancel</string>
@@ -212,4 +222,7 @@
     <string name="document_viewer_privacy_policy_title">Privacy Policy</string>
     <string name="document_viewer_terms_title">Terms of Service</string>
     <string name="document_viewer_changelog_title">Changelog</string>
+    <string name="setup_theme_title">Choose Your Theme</string>
+    <string name="setup_theme_subtitle">Pick a look that suits you. You can always change this later in Settings.</string>
+    <string name="setup_theme_skip">Skip</string>
 </resources>

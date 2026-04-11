@@ -14,6 +14,18 @@
         <item name="colorOnPrimaryContainer">@color/purple_50</item>
         <item name="android:statusBarColor">@color/toolbar_color</item>
         <item name="android:navigationBarColor">@color/toolbar_color</item>
+        <item name="clintSecondaryTextColor">@color/on_surface_medium</item>
+        <item name="clintAddressBarColor">@color/address_bar_color</item>
+        <item name="clintPopupBackground">@color/default_popup_background</item>
+        <item name="clintPopupTextColor">@color/on_surface</item>
+        <item name="clintPopupStrokeColor">@color/default_popup_stroke_color</item>
+        <item name="clintPopupCheckColor">@color/default_popup_check_color</item>
+        <item name="clintPopupDividerColor">#22BA68C8</item>
+        <item name="clintDividerColor">@color/dark_divider_color</item>
+        <item name="clintSurfaceVariant">#1AFFFFFF</item>
+        <item name="clintButtonBackground">@color/default_button_background</item>
+        <item name="clintButtonTextColor">@color/default_button_text</item>
+        <item name="clintButtonIconTint">@color/default_button_text</item>
     </style>
 
     <style name="ClintDialogShape" parent="ShapeAppearance.MaterialComponents.MediumComponent">
@@ -24,13 +36,98 @@
         <item name="android:textColor">@color/on_surface</item>
     </style>
 
-    <style name="ThemeOverlay.ClintBrowser.Dialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+    <style name="ThemeOverlay.ClintBrowser.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
         <item name="shapeAppearanceMediumComponent">@style/ClintDialogShape</item>
         <item name="colorSurface">@color/toolbar_color</item>
+        <item name="colorSurfaceContainerHigh">@color/toolbar_color</item>
         <item name="colorOnSurface">@color/on_surface</item>
         <item name="colorPrimary">@color/purple_300</item>
         <item name="android:textColorPrimary">@color/on_surface</item>
         <item name="android:textColorSecondary">@color/on_surface_medium</item>
         <item name="materialAlertDialogTitleTextStyle">@style/ClintDialogTitle</item>
+    </style>
+
+    <style name="ThemeOverlay.ClintBrowser.Dialog.Dark" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="shapeAppearanceMediumComponent">@style/ClintDialogShape</item>
+        <item name="colorSurface">@color/dark_theme_surface</item>
+        <item name="colorSurfaceContainerHigh">@color/dark_theme_surface</item>
+        <item name="colorOnSurface">@color/on_surface</item>
+        <item name="colorPrimary">@color/dark_theme_accent</item>
+        <item name="android:textColorPrimary">@color/on_surface</item>
+        <item name="android:textColorSecondary">@color/on_surface_medium</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/ClintDialogTitle</item>
+    </style>
+
+    <style name="Theme.ClintBrowser.Dark" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/dark_theme_accent</item>
+        <item name="colorPrimaryVariant">@color/dark_theme_surface</item>
+        <item name="colorOnPrimary">@color/dark_theme_background</item>
+        <item name="colorSecondary">@color/dark_theme_accent</item>
+        <item name="colorOnSecondary">@color/dark_theme_background</item>
+        <item name="colorSurface">@color/dark_theme_surface</item>
+        <item name="colorOnSurface">@color/on_surface</item>
+        <item name="android:colorBackground">@color/dark_theme_background</item>
+        <item name="android:windowBackground">@color/dark_theme_background</item>
+        <item name="colorPrimaryContainer">@color/dark_theme_surface</item>
+        <item name="colorOnPrimaryContainer">@color/on_surface</item>
+        <item name="android:statusBarColor">@color/dark_theme_toolbar</item>
+        <item name="android:navigationBarColor">@color/dark_theme_toolbar</item>
+        <item name="clintSecondaryTextColor">@color/on_surface_medium</item>
+        <item name="clintAddressBarColor">@color/dark_theme_address_bar</item>
+        <item name="clintPopupBackground">@color/dark_theme_surface</item>
+        <item name="clintPopupTextColor">@color/on_surface</item>
+        <item name="clintPopupStrokeColor">#33FFFFFF</item>
+        <item name="clintPopupCheckColor">@color/dark_theme_accent</item>
+        <item name="clintPopupDividerColor">#22FFFFFF</item>
+        <item name="clintDividerColor">@color/dark_divider_color</item>
+        <item name="clintSurfaceVariant">#1AFFFFFF</item>
+        <item name="clintButtonBackground">@color/dark_button_background</item>
+        <item name="clintButtonTextColor">@color/dark_button_text</item>
+        <item name="clintButtonIconTint">@color/dark_button_text</item>
+    </style>
+
+    <style name="Theme.ClintBrowser.Light" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/light_theme_accent</item>
+        <item name="colorPrimaryVariant">@color/light_theme_accent</item>
+        <item name="colorOnPrimary">@color/on_surface</item>
+        <item name="colorSecondary">@color/light_theme_accent</item>
+        <item name="colorOnSecondary">@color/on_surface</item>
+        <item name="colorSurface">@color/light_theme_surface</item>
+        <item name="colorOnSurface">@color/on_surface_dark</item>
+        <item name="android:colorBackground">@color/light_theme_background</item>
+        <item name="android:windowBackground">@color/light_theme_background</item>
+        <item name="colorPrimaryContainer">@color/light_theme_surface</item>
+        <item name="colorOnPrimaryContainer">@color/on_surface_dark</item>
+        <item name="android:statusBarColor">@color/light_theme_toolbar</item>
+        <item name="android:navigationBarColor">@color/light_theme_toolbar</item>
+        <item name="android:textColorPrimary">@color/on_surface_dark</item>
+        <item name="android:textColorSecondary">@color/on_surface_dark_medium</item>
+        <item name="clintSecondaryTextColor">@color/on_surface_dark_medium</item>
+        <item name="clintAddressBarColor">@color/light_theme_address_bar</item>
+        <item name="clintPopupBackground">@color/light_popup_background</item>
+        <item name="clintPopupTextColor">@color/on_surface_dark</item>
+        <item name="clintPopupStrokeColor">@color/light_popup_stroke_color</item>
+        <item name="clintPopupCheckColor">@color/light_popup_check_color</item>
+        <item name="clintPopupDividerColor">#1A000000</item>
+        <item name="clintDividerColor">@color/light_divider_color</item>
+        <item name="clintSurfaceVariant">#0A000000</item>
+        <item name="clintButtonBackground">@color/light_button_background</item>
+        <item name="clintButtonTextColor">@color/light_button_text</item>
+        <item name="clintButtonIconTint">@color/light_button_text</item>
+    </style>
+
+    <style name="ThemeOverlay.ClintBrowser.Dialog.Light" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="shapeAppearanceMediumComponent">@style/ClintDialogShape</item>
+        <item name="colorSurface">@color/light_theme_surface</item>
+        <item name="colorSurfaceContainerHigh">@color/light_theme_surface</item>
+        <item name="colorOnSurface">@color/on_surface_dark</item>
+        <item name="colorPrimary">@color/light_theme_accent</item>
+        <item name="android:textColorPrimary">@color/on_surface_dark</item>
+        <item name="android:textColorSecondary">@color/on_surface_dark_medium</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/ClintDialogTitle.Light</item>
+    </style>
+
+    <style name="ClintDialogTitle.Light" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
+        <item name="android:textColor">@color/on_surface_dark</item>
     </style>
 </resources>

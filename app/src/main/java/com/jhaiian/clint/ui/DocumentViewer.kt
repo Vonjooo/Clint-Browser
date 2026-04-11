@@ -3,6 +3,7 @@ package com.jhaiian.clint.ui
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.widget.LinearLayout
@@ -29,8 +30,32 @@ object DocumentViewer {
     const val CHANGELOG_URL =
         "https://raw.githubusercontent.com/jhaiian/Clint-Browser/main/CHANGELOG.md"
 
+    private fun getDialogTheme(context: Context): Int {
+        val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
+        return when (prefs.getString("app_theme", "default") ?: "default") {
+            "dark" -> R.style.ThemeOverlay_ClintBrowser_Dialog_Dark
+            "light" -> R.style.ThemeOverlay_ClintBrowser_Dialog_Light
+            else -> R.style.ThemeOverlay_ClintBrowser_Dialog
+        }
+    }
+
+    private fun resolveColor(context: Context, themeResId: Int, attr: Int): Int {
+        val themedContext = android.view.ContextThemeWrapper(context, themeResId)
+        val tv = TypedValue()
+        themedContext.theme.resolveAttribute(attr, tv, true)
+        return tv.data
+    }
+
     fun show(context: Context, title: String, url: String) {
         val dp = context.resources.displayMetrics.density
+        val dialogTheme = getDialogTheme(context)
+        val colorOnSurface = resolveColor(context, dialogTheme, com.google.android.material.R.attr.colorOnSurface)
+        val colorOnSurfaceMedium = (colorOnSurface and 0x00FFFFFF) or 0xCC000000.toInt().let {
+            val alpha = ((colorOnSurface ushr 24) * 0.8).toInt()
+            (colorOnSurface and 0x00FFFFFF) or (alpha shl 24)
+        }
+        val colorPrimary = resolveColor(context, dialogTheme, com.google.android.material.R.attr.colorPrimary)
+        val dividerColor = resolveColor(context, dialogTheme, R.attr.clintDividerColor)
 
         val spinner = ProgressBar(context).apply {
             layoutParams = LinearLayout.LayoutParams(
@@ -47,14 +72,14 @@ object DocumentViewer {
         val contentTv = TextView(context).apply {
             visibility = View.GONE
             setPadding(64, 24, 64, 8)
-            setTextColor(0xCCFFFFFF.toInt())
+            setTextColor(colorOnSurface)
             textSize = 13f
         }
 
         val errorTv = TextView(context).apply {
             visibility = View.GONE
             setPadding(64, 32, 64, 32)
-            setTextColor(0x99FFFFFF.toInt())
+            setTextColor(colorOnSurfaceMedium)
             textSize = 13f
             gravity = Gravity.CENTER
             text = context.getString(R.string.document_viewer_error)
@@ -70,7 +95,7 @@ object DocumentViewer {
         }
 
         val divider = View(context).apply {
-            setBackgroundColor(0x1FFFFFFF)
+            setBackgroundColor(dividerColor)
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, 1
             ).also { it.topMargin = (8 * dp).toInt() }
@@ -78,13 +103,13 @@ object DocumentViewer {
 
         val btnBack = TextView(context).apply {
             text = context.getString(R.string.back)
-            setTextColor(0xFFBA68C8.toInt())
+            setTextColor(colorPrimary)
             textSize = 14f
             typeface = android.graphics.Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
             val pad = (12 * dp).toInt()
             setPadding(pad, pad, pad, pad)
-            background = android.util.TypedValue().let { tv ->
+            background = TypedValue().let { tv ->
                 context.theme.resolveAttribute(android.R.attr.selectableItemBackground, tv, true)
                 androidx.core.content.ContextCompat.getDrawable(context, tv.resourceId)
             }
@@ -108,7 +133,7 @@ object DocumentViewer {
             addView(buttonRow)
         }
 
-        val dialog = MaterialAlertDialogBuilder(context, R.style.ThemeOverlay_ClintBrowser_Dialog)
+        val dialog = MaterialAlertDialogBuilder(context, dialogTheme)
             .setTitle(title)
             .setView(container)
             .setCancelable(false)

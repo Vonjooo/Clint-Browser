@@ -4,6 +4,45 @@ All notable changes to Clint Browser are documented here.
 
 ---
 
+# 🚀 v1.0.2-beta-1
+
+I added an App Theme setting in the **Look and Feel** fragment. From there, you can select a theme:
+
+## 🎨 Themes
+
+- 🟣 **Default** – Deep purple, signature Clint style  
+- 🌙 **Dark** – Dark background with white accents  
+- ⚪ **Light** – Clean white background with dark accents  
+
+## ⚙️ Changes
+
+- 🧭 The App Theme option has also been added to the second page of the Setup Wizard, next to the Terms of Service and Privacy Policy agreements.  
+
+## 🐞 Bug Fixes
+
+- Fixed all bugs and issues in notification downloads.  
+- Fixed `Builder.yml` not recognizing the new format of `CHANGELOG.md`.  
+- Fixed the issue where the update changelog reader was cutting off content.  
+- Fixed the beta enrollment not checking for stable releases.  
+
+## 📁 Project Structure
+
+The `MainActivity.kt` file has now been split into multiple components to improve maintainability and reduce its size (it was previously 1092 lines, which made it hard to manage).
+
+| File | Lines | Responsibility |
+|---|---|---|
+| `MainActivity.kt` | 241 | Fields, lifecycle, preferences listener, back key handling |
+| `MainTabDelegate.kt` | 139 | Tab open/close/save/restore/switching |
+| `MainWebViewDelegate.kt` | 144 | WebView creation, settings, dark mode, user agent, desktop mode, search engine URLs |
+| `MainScrollDelegate.kt` | 131 | Bar animation, scroll tracking, swipe refresh |
+| `MainUiDelegate.kt` | 264 | Address bar, navigation buttons, popup menu, UI updates |
+| `MainFullscreenDelegate.kt` | 78 | Fullscreen enter/exit handling |
+| `MainFileChooserDelegate.kt` | 101 | File and camera chooser handling |
+
+This change was made because `MainActivity.kt` had grown to 1092 lines, making it difficult to maintain and manage.
+
+---
+
 # v1.0.1
 
 ## ✨ New Features
@@ -103,6 +142,8 @@ All notable changes to Clint Browser are documented here.
 ## 🙏 Credits
 - **Vonjooo** — improvements to `release.yml` ([#1](https://github.com/jhaiian/Clint-Browser/pull/1))  
 - **snashyturner** — reported APK install issue in Downloads ([#2](https://github.com/jhaiian/Clint-Browser/issues/2))
+
+---
 
 # v1.0.1-beta-2
 

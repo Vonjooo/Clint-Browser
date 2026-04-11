@@ -11,7 +11,7 @@ A privacy-focused Android browser built on Android WebView — no Google telemet
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blueviolet.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Android%208.0%2B-blueviolet.svg)](https://developer.android.com)
 [![Stable](https://img.shields.io/badge/Stable-1.0.1-blueviolet.svg)](https://github.com/jhaiian/Clint-Browser/releases/tag/v1.0.1)
-[![Beta](https://img.shields.io/badge/Beta-1.0.1-blueviolet.svg)](https://github.com/jhaiian/Clint-Browser/releases/tag/v1.0.1-beta-2)
+[![Beta](https://img.shields.io/badge/Beta-1.0.2--beta--1-blueviolet.svg)](https://github.com/jhaiian/Clint-Browser/releases/tag/v1.0.2-beta-1)
 [![Open Source](https://img.shields.io/badge/Open%20Source-Yes-blueviolet.svg)](https://github.com/jhaiian/Clint-Browser)
 
 </div>
@@ -44,6 +44,9 @@ Built and maintained by **[@jhaiian](https://github.com/jhaiian)** — a solo de
     <td align="center"><img src="docs/screenshot8.jpg" width="180" alt="Settings" /><br/><sub>Settings</sub></td>
     <td align="center"><img src="docs/screenshot9.jpg" width="180" alt="Downloads" /><br/><sub>Downloads</sub></td>
     <td align="center"><img src="docs/screenshot10.jpg" width="180" alt="Bookmarks" /><br/><sub>Bookmarks</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshot11.jpg" width="180" alt="Choose Your Theme setup screen" /><br/><sub>Theme Setup</sub></td>
   </tr>
 </table>
 
@@ -99,6 +102,11 @@ Built and maintained by **[@jhaiian](https://github.com/jhaiian)** — a solo de
 
 ### 🎨 Look & Feel
 - Dedicated **Look & Feel** section in Settings for web appearance and display options
+- **App Theme** selection with three built-in themes:
+  - 🟣 **Default** — Deep purple, signature Clint style
+  - 🌙 **Dark** — Dark background with white accents
+  - ⚪ **Light** — Clean white background with dark accents
+- Theme can also be chosen during the **Setup Wizard** (shown after the Terms of Service and Privacy Policy step)
 - Scroll-hide bars and status bar visibility configurable independently
 
 ### 🔄 Updates

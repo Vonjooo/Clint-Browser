@@ -19,7 +19,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textColor="@color/on_surface"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="14sp"
             android:fontFamily="sans-serif-medium"
             android:maxLines="1"
@@ -45,7 +45,7 @@
             android:paddingTop="6dp"
             android:paddingBottom="6dp"
             android:text="Open"
-            android:textColor="@color/purple_300"
+            android:textColor="?attr/colorPrimary"
             android:textSize="13sp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:visibility="gone" />
@@ -57,7 +57,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:textColor="@color/on_surface_medium"
+        android:textColor="?attr/clintSecondaryTextColor"
         android:textSize="12sp" />
 
     <ProgressBar
@@ -66,8 +66,8 @@
         android:layout_width="match_parent"
         android:layout_height="4dp"
         android:layout_marginTop="8dp"
-        android:progressTint="@color/purple_300"
-        android:progressBackgroundTint="#22FFFFFF"
+        android:progressTint="?attr/colorPrimary"
+        android:progressBackgroundTint="?attr/clintDividerColor"
         android:max="100"
         android:visibility="gone" />
 
@@ -75,6 +75,6 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginTop="14dp"
-        android:background="#10FFFFFF" />
+        android:background="?attr/clintDividerColor" />
 
 </LinearLayout>

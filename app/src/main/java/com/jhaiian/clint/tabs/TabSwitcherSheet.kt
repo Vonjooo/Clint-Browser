@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -44,7 +43,6 @@ class TabSwitcherSheet : BottomSheetDialogFragment() {
         val dialog = super.onCreateDialog(savedInstanceState) as BottomSheetDialog
         dialog.setOnShowListener {
             val sheet = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
-            sheet?.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.surface_dark))
             sheet?.let {
                 val behavior = BottomSheetBehavior.from(it)
                 behavior.peekHeight = resources.displayMetrics.heightPixels / 2

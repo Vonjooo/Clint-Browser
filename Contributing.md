@@ -56,8 +56,16 @@ APKs will be output to `app/build/outputs/apk/release/`.
 ClintBrowser/
 ├── app/src/main/java/com/jhaiian/clint/
 │   ├── activities/
-│   │   ├── MainActivity.kt           # Browser UI, scroll-hide bars, tab management
-│   │   ├── ClintActivity.kt          # Base activity
+│   │   ├── MainActivity.kt           # Browser activity, state, and lifecycle
+│   │   ├── MainFileChooserDelegate.kt# File chooser and camera capture logic
+│   │   ├── MainFullscreenDelegate.kt # Video fullscreen enter/exit logic
+│   │   ├── MainScrollDelegate.kt     # Scroll-hide bars and swipe refresh setup
+│   │   ├── MainTabDelegate.kt        # Tab open, close, restore, and switching
+│   │   ├── MainUiDelegate.kt         # WebView setup, address bar, UI state updates
+│   │   ├── MainWebViewDelegate.kt    # WebView configuration and settings apply
+│   │   ├── ClintActivity.kt          # Base activity (theming, dialogs)
+│   │   ├── ThemeRevealHolder.kt      # Shared bitmap for theme-change animation
+│   │   ├── ThemeRevealOverlay.kt     # Circular reveal overlay for theme changes
 │   │   ├── BookmarksActivity.kt      # Bookmarks screen
 │   │   ├── DownloadsActivity.kt      # Downloads screen
 │   │   ├── SettingsActivity.kt       # Settings host activity

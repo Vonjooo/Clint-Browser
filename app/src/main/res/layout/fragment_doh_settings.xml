@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/surface_dark">
+    android:background="?android:attr/colorBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -15,7 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/doh_description"
-            android:textColor="@color/on_surface_medium"
+            android:textColor="?attr/clintSecondaryTextColor"
             android:textSize="13sp"
             android:lineSpacingMultiplier="1.5"
             android:paddingTop="8dp"
@@ -25,7 +25,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/doh_mode_label"
-            android:textColor="@color/purple_200"
+            android:textColor="?attr/colorPrimary"
             android:textSize="11sp"
             android:fontFamily="sans-serif-medium"
             android:letterSpacing="0.1"
@@ -37,9 +37,9 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:alpha="0.55"
-            app:cardBackgroundColor="@color/toolbar_color"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="12dp"
-            app:strokeColor="@color/purple_300"
+            app:strokeColor="?attr/colorPrimary"
             app:strokeWidth="0dp">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -51,7 +51,7 @@
                     android:id="@+id/radioDohOff"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:buttonTint="@color/purple_300"
+                    android:buttonTint="?attr/colorPrimary"
                     android:clickable="false"
                     android:focusable="false" />
                 <LinearLayout
@@ -63,14 +63,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/doh_mode_off"
-                        android:textColor="@color/on_surface"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="15sp"
                         android:fontFamily="sans-serif-medium" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/doh_mode_off_desc"
-                        android:textColor="@color/on_surface_medium"
+                        android:textColor="?attr/clintSecondaryTextColor"
                         android:textSize="12sp"
                         android:layout_marginTop="2dp" />
                 </LinearLayout>
@@ -83,9 +83,9 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:alpha="0.55"
-            app:cardBackgroundColor="@color/toolbar_color"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="12dp"
-            app:strokeColor="@color/purple_300"
+            app:strokeColor="?attr/colorPrimary"
             app:strokeWidth="0dp">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -97,7 +97,7 @@
                     android:id="@+id/radioDohDefault"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:buttonTint="@color/purple_300"
+                    android:buttonTint="?attr/colorPrimary"
                     android:clickable="false"
                     android:focusable="false" />
                 <LinearLayout
@@ -109,14 +109,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/doh_mode_default"
-                        android:textColor="@color/on_surface"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="15sp"
                         android:fontFamily="sans-serif-medium" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/doh_mode_default_desc"
-                        android:textColor="@color/on_surface_medium"
+                        android:textColor="?attr/clintSecondaryTextColor"
                         android:textSize="12sp"
                         android:layout_marginTop="2dp" />
                 </LinearLayout>
@@ -129,9 +129,9 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:alpha="0.55"
-            app:cardBackgroundColor="@color/toolbar_color"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="12dp"
-            app:strokeColor="@color/purple_300"
+            app:strokeColor="?attr/colorPrimary"
             app:strokeWidth="0dp">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -143,7 +143,7 @@
                     android:id="@+id/radioDohIncreased"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:buttonTint="@color/purple_300"
+                    android:buttonTint="?attr/colorPrimary"
                     android:clickable="false"
                     android:focusable="false" />
                 <LinearLayout
@@ -155,14 +155,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/doh_mode_increased"
-                        android:textColor="@color/on_surface"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="15sp"
                         android:fontFamily="sans-serif-medium" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/doh_mode_increased_desc"
-                        android:textColor="@color/on_surface_medium"
+                        android:textColor="?attr/clintSecondaryTextColor"
                         android:textSize="12sp"
                         android:layout_marginTop="2dp" />
                 </LinearLayout>
@@ -175,9 +175,9 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:alpha="0.55"
-            app:cardBackgroundColor="@color/toolbar_color"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="12dp"
-            app:strokeColor="@color/purple_300"
+            app:strokeColor="?attr/colorPrimary"
             app:strokeWidth="0dp">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -189,7 +189,7 @@
                     android:id="@+id/radioDohMax"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:buttonTint="@color/purple_300"
+                    android:buttonTint="?attr/colorPrimary"
                     android:clickable="false"
                     android:focusable="false" />
                 <LinearLayout
@@ -201,14 +201,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/doh_mode_max"
-                        android:textColor="@color/on_surface"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="15sp"
                         android:fontFamily="sans-serif-medium" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/doh_mode_max_desc"
-                        android:textColor="@color/on_surface_medium"
+                        android:textColor="?attr/clintSecondaryTextColor"
                         android:textSize="12sp"
                         android:layout_marginTop="2dp" />
                 </LinearLayout>
@@ -226,7 +226,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/doh_provider_label"
-                android:textColor="@color/purple_200"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="11sp"
                 android:fontFamily="sans-serif-medium"
                 android:letterSpacing="0.1"
@@ -237,9 +237,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                app:cardBackgroundColor="@color/toolbar_color"
+                app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="12dp"
-                app:strokeColor="@color/purple_300"
+                app:strokeColor="?attr/colorPrimary"
                 app:strokeWidth="3dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -252,7 +252,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="true"
-                        android:buttonTint="@color/purple_300"
+                        android:buttonTint="?attr/colorPrimary"
                         android:clickable="false"
                         android:focusable="false" />
                     <LinearLayout
@@ -264,14 +264,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/doh_provider_cloudflare"
-                            android:textColor="@color/on_surface"
+                            android:textColor="?attr/colorOnSurface"
                             android:textSize="15sp"
                             android:fontFamily="sans-serif-medium" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/doh_provider_cloudflare_desc"
-                            android:textColor="@color/on_surface_medium"
+                            android:textColor="?attr/clintSecondaryTextColor"
                             android:textSize="12sp"
                             android:layout_marginTop="2dp" />
                     </LinearLayout>
@@ -284,9 +284,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
                 android:alpha="0.55"
-                app:cardBackgroundColor="@color/toolbar_color"
+                app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="12dp"
-                app:strokeColor="@color/purple_300"
+                app:strokeColor="?attr/colorPrimary"
                 app:strokeWidth="0dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -298,7 +298,7 @@
                         android:id="@+id/radioProviderQuad9"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:buttonTint="@color/purple_300"
+                        android:buttonTint="?attr/colorPrimary"
                         android:clickable="false"
                         android:focusable="false" />
                     <LinearLayout
@@ -310,14 +310,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/doh_provider_quad9"
-                            android:textColor="@color/on_surface"
+                            android:textColor="?attr/colorOnSurface"
                             android:textSize="15sp"
                             android:fontFamily="sans-serif-medium" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/doh_provider_quad9_desc"
-                            android:textColor="@color/on_surface_medium"
+                            android:textColor="?attr/clintSecondaryTextColor"
                             android:textSize="12sp"
                             android:layout_marginTop="2dp" />
                     </LinearLayout>

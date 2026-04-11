@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="8dp"
-    app:cardBackgroundColor="@color/toolbar_color"
+    app:cardBackgroundColor="?attr/colorSurface"
     app:cardCornerRadius="12dp"
     app:strokeWidth="0dp">
 
@@ -30,7 +30,7 @@
             android:layout_height="22dp"
             android:layout_marginEnd="12dp"
             android:src="@drawable/ic_globe_24"
-            android:tint="@color/purple_200" />
+            android:tint="?attr/colorPrimary" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -43,7 +43,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="New Tab"
-                android:textColor="@color/on_surface"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="14sp"
                 android:maxLines="1"
                 android:ellipsize="end"
@@ -54,7 +54,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:textColor="@color/on_surface_medium"
+                android:textColor="?attr/clintSecondaryTextColor"
                 android:textSize="12sp"
                 android:maxLines="1"
                 android:ellipsize="end" />
@@ -68,7 +68,7 @@
             android:layout_marginStart="8dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_close_24"
-            android:tint="@color/on_surface_medium"
+            android:tint="?attr/clintSecondaryTextColor"
             android:contentDescription="@string/close_tab" />
 
     </LinearLayout>

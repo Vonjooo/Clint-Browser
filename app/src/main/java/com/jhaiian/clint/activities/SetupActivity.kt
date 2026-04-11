@@ -9,12 +9,14 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.View
 import android.widget.CheckBox
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.preference.PreferenceManager
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.jhaiian.clint.R
 import com.jhaiian.clint.crash.CrashHandler
@@ -25,11 +27,12 @@ class SetupActivity : ClintActivity() {
 
     private lateinit var binding: ActivitySetupBinding
     private var selectedEngine = "duckduckgo"
+    private var selectedTheme = "default"
 
     private val browserRoleLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
-        refreshPage3()
+        refreshPage4()
     }
     private var selectedDohMode = DohManager.MODE_OFF
     private var selectedProvider = DohManager.PROVIDER_CLOUDFLARE
@@ -38,6 +41,7 @@ class SetupActivity : ClintActivity() {
     companion object {
         const val PRIVACY_POLICY_URL = "https://github.com/jhaiian/Clint-Browser/blob/main/PRIVACY_POLICY.md"
         const val TERMS_URL = "https://github.com/jhaiian/Clint-Browser/blob/main/TERMS_OF_SERVICE.md"
+        private const val KEY_PENDING_PAGE = "setup_pending_page"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,17 +56,28 @@ class SetupActivity : ClintActivity() {
             v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
             insets
         }
+
+        selectedTheme = prefs.getString("app_theme", "default") ?: "default"
+
         setupPage0()
         setupPage1()
         setupPage2()
         setupPage3()
-        showPage(0)
+        setupPage4()
+
+        val pendingPage = prefs.getInt(KEY_PENDING_PAGE, -1)
+        if (pendingPage >= 0) {
+            prefs.edit().remove(KEY_PENDING_PAGE).apply()
+            showPage(pendingPage, animate = false)
+        } else {
+            showPage(0, animate = false)
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        if (currentPage == 2) refreshPage2Button()
-        if (currentPage == 3) refreshPage3()
+        if (currentPage == 3) refreshPage3Button()
+        if (currentPage == 4) refreshPage4()
     }
 
     private fun setupPage0() {
@@ -87,14 +102,47 @@ class SetupActivity : ClintActivity() {
     }
 
     private fun setupPage1() {
+        selectSetupTheme(selectedTheme)
+
+        binding.cardSetupThemeDefault.setOnClickListener { onSetupThemeSelected("default") }
+        binding.cardSetupThemeDark.setOnClickListener { onSetupThemeSelected("dark") }
+        binding.cardSetupThemeLight.setOnClickListener { onSetupThemeSelected("light") }
+        binding.btnSetupThemeNext.setOnClickListener { showPage(2) }
+    }
+
+    private fun onSetupThemeSelected(theme: String) {
+        if (theme == selectedTheme) {
+            showPage(2)
+            return
+        }
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        prefs.edit().putInt(KEY_PENDING_PAGE, 1).apply()
+        captureAndRecreate(theme)
+    }
+
+    private fun selectSetupTheme(theme: String) {
+        selectedTheme = theme
+        listOf(
+            Triple(binding.cardSetupThemeDefault, binding.checkSetupThemeDefault, "default"),
+            Triple(binding.cardSetupThemeDark, binding.checkSetupThemeDark, "dark"),
+            Triple(binding.cardSetupThemeLight, binding.checkSetupThemeLight, "light")
+        ).forEach { (card, check, key) ->
+            val sel = key == theme
+            card.alpha = if (sel) 1.0f else 0.45f
+            card.strokeWidth = if (sel) 3 else 0
+            check.visibility = if (sel) View.VISIBLE else View.INVISIBLE
+        }
+    }
+
+    private fun setupPage2() {
         selectEngine("duckduckgo")
         binding.cardDuckduckgo.setOnClickListener { selectEngine("duckduckgo") }
         binding.cardBrave.setOnClickListener { selectEngine("brave") }
         binding.cardGoogle.setOnClickListener { selectEngine("google") }
-        binding.btnNext.setOnClickListener { onNextFromPage1() }
+        binding.btnNext.setOnClickListener { onNextFromPage2() }
     }
 
-    private fun setupPage2() {
+    private fun setupPage3() {
         selectDohMode(DohManager.MODE_OFF)
         selectProvider(DohManager.PROVIDER_CLOUDFLARE)
         listOf(
@@ -113,21 +161,21 @@ class SetupActivity : ClintActivity() {
         }
     }
 
-    private fun refreshPage2Button() {
+    private fun refreshPage3Button() {
         if (isClintDefaultBrowser()) {
             binding.btnGetStarted.text = getString(R.string.get_started)
             binding.btnGetStarted.setOnClickListener { saveAndProceed() }
         } else {
             binding.btnGetStarted.text = getString(R.string.next)
-            binding.btnGetStarted.setOnClickListener { showPage(3) }
+            binding.btnGetStarted.setOnClickListener { showPage(4) }
         }
     }
 
-    private fun setupPage3() {
+    private fun setupPage4() {
         binding.btnSkipDefaultBrowser.setOnClickListener { saveAndProceed() }
     }
 
-    private fun refreshPage3() {
+    private fun refreshPage4() {
         if (isClintDefaultBrowser()) {
             binding.ivDefaultBrowserCheck.visibility = View.VISIBLE
             binding.btnSetDefaultBrowser.text = getString(R.string.get_started)
@@ -139,11 +187,16 @@ class SetupActivity : ClintActivity() {
         }
     }
 
-    private fun showPage(page: Int) {
+    private fun showPage(page: Int, animate: Boolean = true) {
         currentPage = page
+        if (!animate) binding.viewFlipper.setInAnimation(null).also { binding.viewFlipper.setOutAnimation(null) }
         binding.viewFlipper.displayedChild = page
-        if (page == 2) refreshPage2Button()
-        if (page == 3) refreshPage3()
+        if (animate) {
+            binding.viewFlipper.inAnimation = android.view.animation.AnimationUtils.loadAnimation(this, android.R.anim.slide_in_left)
+            binding.viewFlipper.outAnimation = android.view.animation.AnimationUtils.loadAnimation(this, android.R.anim.slide_out_right)
+        }
+        if (page == 3) refreshPage3Button()
+        if (page == 4) refreshPage4()
     }
 
     private fun isClintDefaultBrowser(): Boolean {
@@ -166,16 +219,16 @@ class SetupActivity : ClintActivity() {
         startActivity(Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS))
     }
 
-    private fun onNextFromPage1() {
+    private fun onNextFromPage2() {
         if (selectedEngine == "google") {
-            MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_ClintBrowser_Dialog)
+            MaterialAlertDialogBuilder(this, getDialogTheme())
                 .setTitle(getString(R.string.google_warning_title))
                 .setMessage(getString(R.string.google_warning_message))
                 .setNegativeButton(getString(R.string.choose_another), null)
-                .setPositiveButton(getString(R.string.use_google_anyway)) { _, _ -> showPage(2) }
+                .setPositiveButton(getString(R.string.use_google_anyway)) { _, _ -> showPage(3) }
                 .show()
         } else {
-            showPage(2)
+            showPage(3)
         }
     }
 
